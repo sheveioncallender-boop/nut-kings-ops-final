@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_reason_list" model="ir.ui.view"><field name="name">nutkings.reason.list</field><field name="model">nutkings.movement.reason</field><field name="arch" type="xml"><list editable="bottom"><field name="sequence" widget="handle"/><field name="name"/><field name="code"/><field name="applies_to"/><field name="requires_note"/><field name="active"/></list></field></record>
+    <record id="action_nk_reasons" model="ir.actions.act_window"><field name="name">Movement Reasons</field><field name="res_model">nutkings.movement.reason</field><field name="view_mode">list,form</field></record>
+</odoo>

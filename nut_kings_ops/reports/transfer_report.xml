@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_nk_transfer" model="ir.actions.report">
+        <field name="name">Nut Kings Stock Transfer</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">nut_kings_ops.report_nk_transfer_document</field>
+        <field name="report_file">nut_kings_ops.report_nk_transfer_document</field>
+        <field name="print_report_name">'Nut-Kings-%s' % (object.name or 'Transfer')</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_nk_transfer_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div style="border-top:8px solid #ef1b23;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <h2 style="margin:0;color:#17120f;">Nut Kings Stock Transfer</h2>
+                                <p style="margin:4px 0 0;">Sesame Foods Limited</p>
+                            </div>
+                            <img src="/nut_kings_ops/static/img/nut_kings_logo.png" style="max-height:70px;max-width:190px;" alt="The Nut Kings"/>
+                        </div>
+                        <h3 style="margin:18px 0 10px;"><span t-field="o.name"/></h3>
+                        <table class="table table-sm table-borderless" style="margin-bottom:16px;">
+                            <tbody>
+                                <tr><td><strong>Operation Type</strong></td><td><span t-field="o.picking_type_id"/></td><td><strong>Status</strong></td><td><span t-field="o.state"/></td></tr>
+                                <tr><td><strong>Source</strong></td><td><span t-field="o.location_id"/></td><td><strong>Destination</strong></td><td><span t-field="o.location_dest_id"/></td></tr>
+                                <tr><td><strong>Customer / Supplier</strong></td><td><span t-field="o.partner_id"/></td><td><strong>Scheduled Date</strong></td><td><span t-field="o.scheduled_date"/></td></tr>
+                                <tr><td><strong>Van</strong></td><td><span t-field="o.nk_truck_id"/></td><td><strong>Trip</strong></td><td><span t-field="o.nk_trip_id"/></td></tr>
+                                <tr><td><strong>Done by</strong></td><td><span t-field="o.nk_workspace_user_id"/></td><td><strong>Device</strong></td><td><span t-field="o.nk_device_name"/></td></tr>
+                                <tr><td><strong>Reference</strong></td><td colspan="3"><span t-field="o.nk_reference"/></td></tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm table-bordered">
+                            <thead style="background:#ffc928;color:#17120f;">
+                                <tr><th>Product</th><th>Barcode</th><th class="text-end">Demand</th><th class="text-end">Moved</th><th>Unit</th><th>Lot / Batch</th></tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.move_ids" t-as="move">
+                                    <tr>
+                                        <td><span t-field="move.product_id"/></td>
+                                        <td><span t-esc="move.product_id.barcode or ''"/></td>
+                                        <td class="text-end"><span t-field="move.product_uom_qty"/></td>
+                                        <td class="text-end"><span t-field="move.quantity"/></td>
+                                        <td><span t-field="move.product_uom"/></td>
+                                        <td><span t-esc="move.nk_lot_reference or ', '.join(move.move_line_ids.mapped('lot_id.name'))"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <div t-if="o.note" style="margin-top:16px;border:1px solid #ddd;padding:10px;"><strong>Notes</strong><div t-field="o.note"/></div>
+                        <div style="margin-top:55px;display:flex;gap:50px;">
+                            <div style="width:45%;border-top:1px solid #17120f;padding-top:5px;">Prepared / Processed By</div>
+                            <div style="width:45%;border-top:1px solid #17120f;padding-top:5px;">Authorized Signature</div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

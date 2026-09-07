@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_nk" model="ir.ui.view">
+        <field name="name">product.template.form.nut.kings.ops</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Nut Kings Ops" name="nut_kings_ops">
+                    <group>
+                        <group>
+                            <field name="nk_inventory_type"/>
+                            <field name="nk_enabled"/>
+                            <field name="nk_minimum_qty"/>
+                        </group>
+                        <group>
+                            <field name="nk_pack_size"/>
+                            <field name="nk_units_per_case"/>
+                            <field name="barcode"/>
+                            <field name="default_code"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_nk_raw_products" model="ir.actions.act_window">
+        <field name="name">Raw Material Items</field><field name="res_model">product.template</field><field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('nk_inventory_type','=','raw_material')]</field>
+        <field name="context">{'default_nk_inventory_type':'raw_material','default_nk_enabled':True,'default_is_storable':True}</field>
+    </record>
+    <record id="action_nk_finished_products" model="ir.actions.act_window">
+        <field name="name">Finished Products</field><field name="res_model">product.template</field><field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('nk_inventory_type','=','finished_good')]</field>
+        <field name="context">{'default_nk_inventory_type':'finished_good','default_nk_enabled':True,'default_is_storable':True}</field>
+    </record>
+</odoo>

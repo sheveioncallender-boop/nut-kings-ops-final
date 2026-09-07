@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en" data-nk-boot="starting">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17120f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nut Kings Ops">
+  <link rel="manifest" href="/nutkings/manifest.webmanifest">
+  <link rel="icon" href="/nut_kings_ops/static/description/icon-192.png">
+  <link rel="apple-touch-icon" href="/nut_kings_ops/static/description/icon-192.png">
+  <link rel="stylesheet" href="/nut_kings_ops/static/workspace/app-v1.4.1.css">
+  <title>Nut Kings Ops</title>
+</head>
+<body>
+<div class="nk-app">
+  <aside class="nk-sidebar" id="sidebar">
+    <div class="nk-brand">
+      <img src="/nut_kings_ops/static/img/nut_kings_logo.png" alt="The Nut Kings">
+      <div><strong>Nut Kings<br>Ops</strong><span>Inventory &amp; Distribution</span></div>
+    </div>
+    <nav class="nk-nav" aria-label="Nut King workspace navigation">
+      <button class="nk-nav-button active" data-route="dashboard"><span class="nk-nav-icon">⌂</span>Dashboard</button>
+      <button class="nk-nav-button" data-route="raw"><span class="nk-nav-icon">▦</span>Raw Materials</button>
+      <button class="nk-nav-button" data-route="finished"><span class="nk-nav-icon">▤</span>Finished Goods</button>
+      <button class="nk-nav-button" data-route="distribution"><span class="nk-nav-icon">▰</span>Distribution</button>
+      <button class="nk-nav-button" data-route="inventory"><span class="nk-nav-icon">✓</span>Physical Inventory</button>
+      <button class="nk-nav-button" data-route="operations"><span class="nk-nav-icon">⇄</span>Stock Operations</button>
+      <button class="nk-nav-button" data-route="contacts"><span class="nk-nav-icon">◎</span>Contacts &amp; Vans</button>
+      <button class="nk-nav-button" data-route="reports"><span class="nk-nav-icon">▥</span>Reports</button>
+      <button class="nk-nav-button" data-route="sync"><span class="nk-nav-icon">↻</span>Synchronization</button>
+      <button class="nk-nav-button" data-route="settings"><span class="nk-nav-icon">⚙</span>Workspace Users</button>
+    </nav>
+    <div class="nk-sidebar-foot">
+      <strong id="sidebar-user">Nut King User</strong>
+      <div id="sidebar-role">Workspace account</div>
+      <div id="sidebar-company">Loading company…</div>
+      <div id="sidebar-version">Workspace v1.4.1</div>
+      <div class="nk-sidebar-account-actions"><a href="/nutkings/backend" id="developer-link" hidden>Odoo Backend</a><button type="button" id="workspace-logout">Sign out</button></div>
+    </div>
+  </aside>
+
+  <div class="nk-main">
+    <header class="nk-topbar">
+      <div class="nk-actions">
+        <button class="nk-mobile-menu" id="mobile-menu" type="button" aria-label="Open menu">☰</button>
+        <div class="nk-page-title"><h1 id="page-title">Dashboard</h1><p id="page-subtitle">Nut Kings inventory and distribution control</p></div>
+      </div>
+      <div class="nk-top-actions">
+        <div class="nk-connection" id="connection-pill"><span class="nk-dot"></span><span id="connection-text">Checking server…</span></div>
+        <button class="nk-button secondary" id="top-sync" type="button">↻ <span>Synchronize</span></button>
+      </div>
+    </header>
+
+    <main class="nk-content">
+      <div class="nk-offline-banner" id="offline-banner">You are working from the last synchronized Nut King snapshot. All new actions are being saved safely on this device.</div>
+
+      <section class="nk-page active" id="page-dashboard">
+        <div class="nk-hero">
+          <div class="nk-hero-copy"><h2 id="welcome-title">Welcome to Nut Kings Ops</h2><p>Receive, issue, count, distribute, and reconcile stock from one continuous workspace—even during an internet outage.</p></div>
+          <div class="nk-hero-status"><small>Last successful synchronization</small><strong id="hero-last-sync">Not synchronized yet</strong><small id="hero-pending">0 actions waiting</small></div>
+        </div>
+        <div class="nk-section nk-grid nk-grid-4" id="dashboard-kpis"></div>
+        <div class="nk-section">
+          <div class="nk-section-head"><div><h2>Quick Operations</h2><p>Open the rapid scan screen for the most common warehouse actions.</p></div></div>
+          <div class="nk-grid nk-grid-4">
+            <button class="nk-quick" data-scan="raw_receipt"><span class="nk-quick-icon">⬇</span><strong>Raw Materials — Receiving</strong><span>Scan supplier stock into the raw-material warehouse.</span></button>
+            <button class="nk-quick" data-scan="raw_issue"><span class="nk-quick-icon">⬆</span><strong>Raw Materials — Issuing</strong><span>Scan materials out of the raw-material warehouse.</span></button>
+            <button class="nk-quick" data-scan="finished_receipt"><span class="nk-quick-icon">▦</span><strong>Finished Goods — Receiving</strong><span>Add finished products independently into available stock.</span></button>
+            <button class="nk-quick" data-scan="finished_to_truck"><span class="nk-quick-icon">↗</span><strong>Finished Goods — Issued</strong><span>Create an Odoo internal transfer to the selected van.</span></button>
+            <button class="nk-quick" data-count="raw"><span class="nk-quick-icon">✓</span><strong>Raw Physical Inventory</strong><span>Count the Raw Materials warehouse using the normal Odoo inventory method.</span></button>
+            <button class="nk-quick" data-count="finished"><span class="nk-quick-icon">☑</span><strong>Finished Physical Inventory</strong><span>Count the Finished Goods warehouse and apply differences.</span></button>
+            <button class="nk-quick" data-route-target="distribution"><span class="nk-quick-icon">▰</span><strong>Distribution Trips</strong><span>Load vans, deliver to customers, return stock, and reconcile.</span></button>
+            <button class="nk-quick dark" data-route-target="sync"><span class="nk-quick-icon">⌁</span><strong>Offline &amp; Sync Status</strong><span>Review device drafts, pending actions, errors, and synchronization history.</span></button>
+          </div>
+        </div>
+        <div class="nk-section nk-grid nk-grid-2">
+          <div class="nk-card"><div class="nk-section-head"><div><h2>Recent Operations</h2><p>Server records plus actions waiting on this device.</p></div><button class="nk-button light small" data-route-target="operations">View all</button></div><div id="dashboard-operations"></div></div>
+          <div class="nk-card"><div class="nk-section-head"><div><h2>Open Trips</h2><p>Current distribution activity and van assignments.</p></div><button class="nk-button light small" data-route-target="distribution">Manage trips</button></div><div id="dashboard-trips"></div></div>
+        </div>
+      </section>
+
+      <section class="nk-page" id="page-raw">
+        <div class="nk-section-head"><div><h2>Raw Materials Warehouse</h2><p>Current synchronized stock, adjusted by this device’s pending transactions.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="raw_receipt">Receiving</button><button class="nk-button secondary" data-scan="raw_issue">Issuing</button><button class="nk-button dark" data-count="raw">Physical Inventory</button></div></div>
+        <div class="nk-grid nk-grid-3" id="raw-kpis"></div>
+        <div class="nk-card nk-section"><div class="nk-toolbar"><input class="nk-input nk-search" id="raw-search" placeholder="Search raw material, barcode, or reference"><select class="nk-select" id="raw-filter" style="max-width:220px"><option value="all">All stock</option><option value="low">Low stock</option><option value="positive">Positive quantity</option><option value="zero">Zero quantity</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Raw Material</th><th>Barcode</th><th>Pack / UOM</th><th class="number">On Hand</th><th class="number">Available</th><th class="number">Minimum</th><th>Status</th></tr></thead><tbody id="raw-stock-body"></tbody></table></div></div>
+      </section>
+
+      <section class="nk-page" id="page-finished">
+        <div class="nk-section-head"><div><h2>Finished Goods Warehouse</h2><p>Available saleable stock and the projected balance on this device.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="finished_receipt">Receiving</button><button class="nk-button secondary" data-scan="finished_to_truck">Issued</button><button class="nk-button dark" data-count="finished">Physical Inventory</button></div></div>
+        <div class="nk-grid nk-grid-3" id="finished-kpis"></div>
+        <div class="nk-card nk-section"><div class="nk-toolbar"><input class="nk-input nk-search" id="finished-search" placeholder="Search finished product, barcode, or reference"><select class="nk-select" id="finished-filter" style="max-width:220px"><option value="all">All stock</option><option value="low">Low stock</option><option value="positive">Positive quantity</option><option value="zero">Zero quantity</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Finished Product</th><th>Barcode</th><th>Pack / UOM</th><th class="number">On Hand</th><th class="number">Available</th><th class="number">Minimum</th><th>Status</th></tr></thead><tbody id="finished-stock-body"></tbody></table></div></div>
+      </section>
+
+      <section class="nk-page" id="page-distribution">
+        <div class="nk-section-head"><div><h2>Distribution Control</h2><p>Trips, vans, customer deliveries, returns, and reconciliation.</p></div><button class="nk-button primary" id="new-trip">+ Create Trip</button></div>
+        <div class="nk-grid nk-grid-4" id="distribution-kpis"></div>
+        <div class="nk-card nk-section"><div class="nk-toolbar"><input class="nk-input nk-search" id="trip-search" placeholder="Search trip, van, driver, or route"><select class="nk-select" id="trip-filter" style="max-width:220px"><option value="open">Open trips</option><option value="all">All cached trips</option><option value="planned">Planned</option><option value="loading">Loading</option><option value="in_progress">In progress</option><option value="reconciliation">Reconciliation</option></select></div><div class="nk-trip-grid" id="trip-grid"></div></div>
+        <div class="nk-card nk-section"><div class="nk-section-head"><div><h2>Stock on Vans</h2><p>Every van has a separate Odoo stock location. Open a van to see every item assigned to it.</p></div></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Van</th><th>Service Areas</th><th>Status</th><th class="number">Total Quantity</th><th>Products</th><th></th></tr></thead><tbody id="truck-stock-body"></tbody></table></div></div>
+      </section>
+
+      <section class="nk-page" id="page-inventory">
+        <div class="nk-section-head"><div><h2>Physical Inventory</h2><p>The offline screen mirrors Odoo’s normal counted quantity and difference workflow, then applies the count through native stock quants when synchronized.</p></div><div class="nk-actions"><button class="nk-button light" id="open-native-count" hidden>Open Native Odoo Count</button></div></div>
+        <div class="nk-card">
+          <div class="nk-form-grid four">
+            <div class="nk-field"><label>Warehouse</label><select class="nk-select" id="count-warehouse"><option value="raw">Raw Materials</option><option value="finished">Finished Goods</option></select></div>
+            <div class="nk-field"><label>Count Date</label><input class="nk-input" type="date" id="count-date"></div>
+            <div class="nk-field"><label>Reference</label><input class="nk-input" id="count-reference" placeholder="Example: Month End Count"></div>
+            <div class="nk-field"><label>Saved Count</label><select class="nk-select" id="count-draft-select"><option value="">Start a new count</option></select></div>
+          </div>
+          <div class="nk-scan-zone">
+            <div class="nk-scan-row" style="grid-template-columns:minmax(240px,2fr) .8fr auto">
+              <div class="nk-field product-field nk-autocomplete-field"><label>Scan Product Barcode</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="count-scan" autocomplete="off" aria-autocomplete="list" aria-controls="count-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type at least 3 characters"><div class="nk-autocomplete-menu" id="count-product-suggestions" role="listbox"></div></div><span class="nk-field-help">Type 3 letters or digits to search products by name, internal reference, or barcode.</span></div>
+              <div class="nk-field"><label>Scan Quantity</label><input class="nk-input" id="count-scan-qty" type="number" min="0.001" step="0.001" value="1"></div>
+              <div class="nk-camera-action-stack"><button class="nk-button camera" id="count-camera" type="button"><span class="nk-camera-icon">▣</span> Scan with Camera</button><button class="nk-button dark" id="count-add-scan">Add Count</button></div>
+            </div>
+            <span class="nk-field-help">Repeated scans increase the counted quantity. Products with multiple lot rows should be counted directly on the correct row.</span>
+          </div>
+          <div class="nk-toolbar" style="margin-top:15px"><input class="nk-input nk-search" id="count-search" placeholder="Filter count lines"><select class="nk-select" id="count-filter" style="max-width:210px"><option value="all">All products</option><option value="counted">Counted</option><option value="uncounted">Not counted</option><option value="variance">With variance</option></select><button class="nk-button light small" id="count-zero-visible">Set visible to zero</button><button class="nk-button light small" id="count-clear">Clear Count</button></div>
+          <div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th>Lot / Serial</th><th class="number">System Quantity</th><th style="width:150px">Counted</th><th class="number">Difference</th><th>Last Count</th></tr></thead><tbody id="count-body"></tbody></table></div>
+          <div class="nk-scan-summary"><div><strong id="count-summary">0 of 0 rows counted</strong><div class="nk-small nk-muted" id="count-variance-summary">No differences entered</div></div><div class="nk-actions"><button class="nk-button light" id="count-save-device">Save on Device</button><button class="nk-button primary" id="count-submit">Submit &amp; Apply</button></div></div>
+        </div>
+      </section>
+
+      <section class="nk-page" id="page-operations">
+        <div class="nk-section-head"><div><h2>Stock Operations</h2><p>Create, confirm, complete, cancel, print, and audit stock operations from this workspace.</p></div><button class="nk-button primary" id="new-operation">+ Rapid Scan</button></div>
+        <div class="nk-card"><div class="nk-toolbar"><input class="nk-input nk-search" id="operation-search" placeholder="Search operation, product, customer, van, or reference"><select class="nk-select" id="operation-filter" style="max-width:220px"><option value="all">All statuses</option><option value="draft">Draft</option><option value="waiting">Waiting</option><option value="ready">Ready</option><option value="done">Done</option><option value="cancel">Cancelled</option><option value="pending">Waiting to sync</option><option value="error">Sync error</option></select><select class="nk-select" id="operation-type-filter" style="max-width:240px"><option value="all">All operation types</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Reference</th><th>Date</th><th>Operation</th><th>Party / Van</th><th class="number">Quantity</th><th>Done by</th><th>Status</th><th></th></tr></thead><tbody id="operations-body"></tbody></table></div></div>
+      </section>
+
+      <section class="nk-page" id="page-contacts">
+        <div class="nk-section-head"><div><h2>Contacts, Vans &amp; Staff</h2><p>Cached operational master data remains searchable while offline.</p></div></div>
+        <div class="nk-toolbar"><button class="nk-button dark contact-tab active" data-contact-tab="customers">Customers</button><button class="nk-button light contact-tab" data-contact-tab="suppliers">Suppliers</button><button class="nk-button light contact-tab" data-contact-tab="trucks">Vans</button><button class="nk-button light contact-tab" data-contact-tab="staff">Staff</button><button class="nk-button primary" id="new-customer" hidden>+ Customer / Company</button><input class="nk-input nk-search" id="contact-search" placeholder="Search current list"></div>
+        <div class="nk-card"><div id="contacts-content"></div></div>
+      </section>
+
+      <section class="nk-page" id="page-reports">
+        <div class="nk-section-head"><div><h2>Management Reports</h2><p>Reports remain available from the last synchronized snapshot and identify pending local actions.</p></div></div>
+        <div class="nk-warning-note" id="report-snapshot-note"></div>
+        <div class="nk-grid nk-grid-4 nk-section" id="report-kpis"></div>
+        <div class="nk-grid nk-grid-2 nk-section">
+          <div class="nk-card"><h2>Low Stock Items</h2><div id="low-stock-report" style="margin-top:14px"></div></div>
+          <div class="nk-card"><h2>Movement Summary</h2><div class="nk-report-bar" id="movement-report" style="margin-top:14px"></div></div>
+          <div class="nk-card"><h2>Stock by Van</h2><div id="truck-report" style="margin-top:14px"></div></div>
+          <div class="nk-card"><h2>Trip Performance</h2><div id="trip-report" style="margin-top:14px"></div></div>
+        </div>
+      </section>
+
+      <section class="nk-page" id="page-sync">
+        <div class="nk-section-head"><div><h2>Synchronization Centre</h2><p>Everything entered during an outage is stored on this device until Odoo accepts it.</p></div><button class="nk-button primary" id="sync-now">Synchronize Now</button></div>
+        <div class="nk-grid nk-grid-4" id="sync-kpis"></div>
+        <div class="nk-grid nk-grid-2 nk-section">
+          <div class="nk-card"><div class="nk-section-head"><div><h2>Waiting Actions</h2><p>Native Odoo transfer actions waiting to synchronize from this device.</p></div></div><div id="queue-list"></div></div>
+          <div class="nk-card"><div class="nk-section-head"><div><h2>Device Count Drafts</h2><p>Physical counts saved locally but not submitted.</p></div></div><div id="count-draft-list"></div></div>
+        </div>
+        <div class="nk-card nk-section"><div class="nk-section-head"><div><h2>Synchronization History</h2><p>Recent successful and failed attempts from this device.</p></div><button class="nk-button light small" id="clear-history">Clear History</button></div><div id="sync-history"></div></div>
+      </section>
+
+      <section class="nk-page" id="page-settings">
+        <div class="nk-section-head"><div><h2>Workspace Users</h2><p>Create simple Nut Kings accounts while Odoo continues to provide authentication, permissions, and audit ownership.</p></div><button class="nk-button primary" id="workspace-user-new">+ Add Workspace User</button></div>
+        <div class="nk-warning-note">This screen manages Nut Kings workspace roles only. Odoo administrator access remains separate and cannot be granted here.</div>
+        <div class="nk-card nk-section">
+          <div class="nk-toolbar"><input class="nk-input nk-search" id="workspace-user-search" placeholder="Search name, login, email, or role"><button class="nk-button light" id="workspace-users-refresh">Refresh</button></div>
+          <div id="workspace-users-status" class="nk-small nk-muted"></div>
+          <div class="nk-table-wrap" style="margin-top:12px"><table class="nk-table"><thead><tr><th>Name</th><th>Login</th><th>Workspace Roles</th><th>Service Areas</th><th>Status</th><th></th></tr></thead><tbody id="workspace-users-body"><tr><td colspan="6" class="nk-empty">Open this page while online to load workspace users.</td></tr></tbody></table></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<datalist id="all-product-options"></datalist>
+
+<div class="nk-modal-backdrop" id="scan-modal">
+  <div class="nk-modal">
+    <div class="nk-modal-head"><div><h2 id="scan-modal-title">Rapid Scan</h2><div class="nk-small nk-muted">Build the operation quickly, then continue with Odoo’s normal transfer actions and printing.</div></div><button class="nk-close" data-close-modal="scan-modal">×</button></div>
+    <div class="nk-modal-body">
+      <div class="nk-form-grid">
+        <div class="nk-field"><label>Operation</label><select class="nk-select" id="scan-operation"></select></div>
+        <div class="nk-field nk-autocomplete-field" id="scan-partner-field"><label id="scan-partner-label">Customer / Supplier</label><select id="scan-partner" hidden><option value="">Select</option></select><div class="nk-autocomplete-wrap"><input class="nk-input" id="scan-partner-search" autocomplete="off" aria-autocomplete="list" aria-controls="scan-partner-suggestions" aria-expanded="false" placeholder="Search customer, company, or supplier"><div class="nk-autocomplete-menu" id="scan-partner-suggestions" role="listbox"></div></div></div>
+        <div class="nk-field" id="scan-reason-field"><label>Movement Reason</label><select class="nk-select" id="scan-reason"><option value="">Select reason</option></select></div>
+        <div class="nk-field" id="scan-trip-field"><label>Distribution Trip</label><select class="nk-select" id="scan-trip"><option value="">Select trip</option></select></div>
+        <div class="nk-field nk-autocomplete-field" id="scan-truck-field"><label>Van</label><select id="scan-truck" hidden><option value="">Select van</option></select><div class="nk-autocomplete-wrap"><input class="nk-input" id="scan-truck-search" autocomplete="off" aria-autocomplete="list" aria-controls="scan-truck-suggestions" aria-expanded="false" placeholder="Search van name or registration"><div class="nk-autocomplete-menu" id="scan-truck-suggestions" role="listbox"></div></div></div>
+        <div class="nk-field"><label>Reference</label><input class="nk-input" id="scan-reference" placeholder="Delivery note, supplier invoice, or internal reference"></div>
+        <div class="nk-field nk-span-3"><label>Notes</label><textarea class="nk-textarea" id="scan-notes" placeholder="Operational details, reason explanation, damage information, or delivery notes"></textarea></div>
+      </div>
+      <div class="nk-scan-zone">
+        <div class="nk-scan-row">
+          <div class="nk-field product-field nk-autocomplete-field"><label>Barcode, Internal Reference, or Product</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="scan-product" autocomplete="off" aria-autocomplete="list" aria-controls="scan-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type product"><div class="nk-autocomplete-menu" id="scan-product-suggestions" role="listbox"></div></div></div>
+          <div class="nk-field"><label>Quantity</label><input class="nk-input" id="scan-qty" type="number" min="0.001" step="0.001" value="1"></div>
+          <div class="nk-field"><label>Batch / Lot</label><input class="nk-input" id="scan-lot" placeholder="Optional"></div>
+          <div class="nk-field"><label>Expiration Date</label><input class="nk-input" id="scan-expiration" type="date"></div>
+          <div class="nk-camera-action-stack"><button class="nk-button camera" id="scan-camera" type="button"><span class="nk-camera-icon">▣</span> Scan with Camera</button><button class="nk-button dark" id="scan-add">Add</button></div>
+        </div>
+      </div>
+      <div class="nk-table-wrap" style="margin-top:15px"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th class="number">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th><th></th></tr></thead><tbody id="scan-lines-body"></tbody></table></div>
+      <div class="nk-scan-summary"><span class="nk-total" id="scan-total">0 lines · 0 quantity</span><span class="nk-small nk-muted" id="scan-stock-message"></span></div>
+    </div>
+    <div class="nk-modal-foot"><button class="nk-button light" id="scan-clear">Clear</button><button class="nk-button secondary" id="scan-review">Review Operation</button></div>
+  </div>
+</div>
+
+<div class="nk-modal-backdrop nk-camera-backdrop" id="camera-modal">
+  <div class="nk-modal nk-camera-modal">
+    <div class="nk-modal-head">
+      <div><h2>Scan Barcode with Camera</h2><div class="nk-small nk-muted">Point the rear camera at one barcode. Successful scans use the same Rapid Scan or Physical Inventory workflow already in Nut Kings Ops.</div></div>
+      <button class="nk-close" id="camera-close" type="button" aria-label="Close camera">×</button>
+    </div>
+    <div class="nk-camera-body">
+      <div class="nk-camera-stage">
+        <video id="camera-video" playsinline muted></video>
+        <canvas id="camera-canvas" hidden></canvas>
+        <div class="nk-camera-guide" aria-hidden="true"><span></span></div>
+        <div class="nk-camera-mode" id="camera-mode">Preparing camera…</div>
+      </div>
+      <div class="nk-camera-status" id="camera-status"><strong>Ready to scan</strong><span>Keep the barcode inside the guide.</span></div>
+      <div class="nk-camera-help">
+        <span>✓ Rear camera preferred</span><span>✓ Repeated scans increase quantity</span><span>✓ Images stay on this device</span>
+      </div>
+    </div>
+    <div class="nk-modal-foot"><button class="nk-button light" id="camera-switch" type="button">Switch Camera</button><button class="nk-button danger" id="camera-stop" type="button">Stop Camera</button></div>
+  </div>
+</div>
+
+<div class="nk-modal-backdrop" id="review-modal">
+  <div class="nk-modal">
+    <div class="nk-modal-head"><div><h2 id="review-title">Review Operation</h2><div class="nk-small nk-muted">This screen follows Odoo’s natural transfer states and actions. Offline actions remain provisional until synchronization.</div></div><button class="nk-close" data-close-modal="review-modal">×</button></div>
+    <div class="nk-modal-body" id="review-content"></div>
+    <div class="nk-modal-foot" id="review-actions"><button class="nk-button light" data-close-modal="review-modal">Close</button></div>
+  </div>
+</div>
+
+<div class="nk-modal-backdrop" id="trip-modal">
+  <div class="nk-modal" style="width:min(760px,100%)">
+    <div class="nk-modal-head"><div><h2>Create Distribution Trip</h2><div class="nk-small nk-muted">The trip can be prepared offline and synchronized later.</div></div><button class="nk-close" data-close-modal="trip-modal">×</button></div>
+    <div class="nk-modal-body">
+      <div class="nk-form-grid two">
+        <div class="nk-field"><label>Van</label><select class="nk-select" id="trip-truck"></select></div>
+        <div class="nk-field"><label>Driver</label><select class="nk-select" id="trip-driver"></select></div>
+        <div class="nk-field"><label>Service Area</label><select class="nk-select" id="trip-service-area"></select></div>
+        <div class="nk-field"><label>Route</label><input class="nk-input" id="trip-route" placeholder="Example: Central Route"></div>
+        <div class="nk-field"><label>Planned Departure</label><input class="nk-input" id="trip-departure" type="datetime-local"></div>
+        <div class="nk-field nk-span-2"><label>Distribution Team</label><select class="nk-select" id="trip-team" multiple size="5"></select><span class="nk-field-help">Use Ctrl/Command to select multiple staff members.</span></div>
+        <div class="nk-field nk-span-2"><label>Planned Customers</label><select class="nk-select" id="trip-customers" multiple size="7"></select><span class="nk-field-help">Use Ctrl/Command to select multiple customers.</span></div>
+        <div class="nk-field nk-span-2"><label>Notes</label><textarea class="nk-textarea" id="trip-notes"></textarea></div>
+      </div>
+    </div>
+    <div class="nk-modal-foot"><button class="nk-button light" data-close-modal="trip-modal">Cancel</button><button class="nk-button primary" id="trip-save">Save Trip</button></div>
+  </div>
+</div>
+
+<div class="nk-modal-backdrop" id="trip-review-modal">
+  <div class="nk-modal"><div class="nk-modal-head"><div><h2 id="trip-review-title">Trip Details</h2></div><button class="nk-close" data-close-modal="trip-review-modal">×</button></div><div class="nk-modal-body" id="trip-review-content"></div><div class="nk-modal-foot" id="trip-review-actions"><button class="nk-button light" data-close-modal="trip-review-modal">Close</button></div></div>
+</div>
+
+<div class="nk-modal-backdrop" id="product-detail-modal">
+  <div class="nk-modal nk-modal-wide"><div class="nk-modal-head"><div><h2 id="product-detail-title">Product Details</h2><div class="nk-small nk-muted">Odoo forecast, locations, reservations, and move history from the latest synchronized snapshot.</div></div><button class="nk-close" data-close-modal="product-detail-modal">×</button></div><div class="nk-modal-body" id="product-detail-content"></div><div class="nk-modal-foot"><button class="nk-button light" data-close-modal="product-detail-modal">Close</button><button class="nk-button primary" id="open-odoo-product">Open Odoo Product</button></div></div>
+</div>
+
+<div class="nk-modal-backdrop" id="detailed-operations-modal">
+  <div class="nk-modal nk-modal-wide"><div class="nk-modal-head"><div><h2 id="detail-operation-title">Detailed Operations</h2><div class="nk-small nk-muted">Choose the exact source location, lot, and quantity. Odoo revalidates every allocation during synchronization.</div></div><button class="nk-close" data-close-modal="detailed-operations-modal">×</button></div><div class="nk-modal-body"><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Product</th><th>Pick From</th><th>Lot</th><th class="number">Last Synced Available</th><th class="number">Quantity</th></tr></thead><tbody id="detail-operation-body"></tbody></table></div><label class="nk-check-row" id="force-demand-field" hidden><input type="checkbox" id="detail-force-demand"> Move the demanded quantity even when it was not reserved (supervisor override; Odoo still validates).</label></div><div class="nk-modal-foot"><button class="nk-button light" data-close-modal="detailed-operations-modal">Cancel</button><button class="nk-button primary" id="save-detailed-operations">Save Detailed Operations</button></div></div>
+</div>
+
+<div class="nk-modal-backdrop" id="customer-modal">
+  <div class="nk-modal" style="width:min(850px,100%)"><div class="nk-modal-head"><div><h2>Add Customer / Company</h2><div class="nk-small nk-muted">Creates a normal Odoo Contact. When offline, it is queued and synchronized before dependent transfers.</div></div><button class="nk-close" data-close-modal="customer-modal">×</button></div><div class="nk-modal-body"><div class="nk-form-grid two"><div class="nk-field"><label>Name</label><input class="nk-input" id="customer-name"></div><div class="nk-field"><label>Type</label><select class="nk-select" id="customer-type"><option value="company">Company</option><option value="person">Individual</option></select></div><div class="nk-field"><label>Customer Code</label><input class="nk-input" id="customer-code"></div><div class="nk-field"><label>Service Area</label><select class="nk-select" id="customer-service-area"></select></div><div class="nk-field"><label>Route</label><input class="nk-input" id="customer-route"></div><div class="nk-field"><label>Phone</label><input class="nk-input" id="customer-phone"></div><div class="nk-field"><label>Mobile</label><input class="nk-input" id="customer-mobile"></div><div class="nk-field nk-span-2"><label>Email</label><input class="nk-input" id="customer-email" type="email"></div><div class="nk-field"><label>Address</label><input class="nk-input" id="customer-street"></div><div class="nk-field"><label>Address Line 2</label><input class="nk-input" id="customer-street2"></div><div class="nk-field"><label>City</label><input class="nk-input" id="customer-city"></div><div class="nk-field nk-span-2"><label>Delivery Instructions</label><textarea class="nk-textarea" id="customer-notes"></textarea></div></div></div><div class="nk-modal-foot"><button class="nk-button light" data-close-modal="customer-modal">Cancel</button><button class="nk-button primary" id="customer-save">Save Customer / Company</button></div></div>
+</div>
+
+<div class="nk-modal-backdrop" id="workspace-user-modal">
+  <div class="nk-modal" style="width:min(820px,100%)">
+    <div class="nk-modal-head"><div><h2 id="workspace-user-modal-title">Add Workspace User</h2><div class="nk-small nk-muted">Creates a real Odoo account limited to the selected Nut Kings workspace roles.</div></div><button class="nk-close" data-close-modal="workspace-user-modal">×</button></div>
+    <div class="nk-modal-body">
+      <input type="hidden" id="workspace-user-id">
+      <div class="nk-form-grid two">
+        <div class="nk-field"><label>Full Name</label><input class="nk-input" id="workspace-user-name" autocomplete="off" placeholder="Employee name"></div>
+        <div class="nk-field"><label>Login</label><input class="nk-input" id="workspace-user-login" autocomplete="off" autocapitalize="off" placeholder="Email or employee username"></div>
+        <div class="nk-field nk-span-2"><label>Email (optional)</label><input class="nk-input" id="workspace-user-email" type="email" autocomplete="off" placeholder="employee@example.com"></div>
+        <div class="nk-field"><label id="workspace-user-password-label">Initial Password</label><input class="nk-input" id="workspace-user-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></div>
+        <div class="nk-field"><label>Confirm Password</label><input class="nk-input" id="workspace-user-password-confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Repeat the password"></div>
+        <div class="nk-field nk-span-2"><label>Workspace Roles</label><div class="nk-choice-grid" id="workspace-user-roles"></div><span class="nk-field-help">Choose one or more roles. The user sees only the matching operational screens and actions.</span></div>
+        <div class="nk-field nk-span-2"><label>Dispatcher Service Areas (optional)</label><div class="nk-choice-grid" id="workspace-user-areas"></div><span class="nk-field-help">Leave all service areas clear to allow every area. These limits apply to dispatcher data and van operations.</span></div>
+        <label class="nk-check-row nk-span-2" id="workspace-user-active-row"><input type="checkbox" id="workspace-user-active" checked> Active workspace account</label>
+      </div>
+      <div class="nk-warning-note" id="workspace-user-lock-note" hidden>This is an Odoo administrator account and cannot be changed from the workspace.</div>
+    </div>
+    <div class="nk-modal-foot"><button class="nk-button light" data-close-modal="workspace-user-modal">Cancel</button><button class="nk-button primary" id="workspace-user-save">Save Workspace User</button></div>
+  </div>
+</div>
+
+<div class="nk-modal-backdrop" id="van-stock-modal">
+  <div class="nk-modal nk-modal-wide">
+    <div class="nk-modal-head"><div><h2 id="van-stock-title">Van Itemized Stock</h2><div class="nk-small nk-muted" id="van-stock-subtitle">Separate Odoo inventory location</div></div><button class="nk-close" data-close-modal="van-stock-modal">×</button></div>
+    <div class="nk-modal-body">
+      <div class="nk-grid nk-grid-3" id="van-stock-kpis"></div>
+      <div class="nk-section-head nk-section"><div><h2>Current Itemized Products</h2><p>Projected van balance from its separate Odoo location.</p></div></div>
+      <div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th>Unit</th><th class="number">On Hand</th><th class="number">Available</th><th>Status</th></tr></thead><tbody id="van-stock-lines"></tbody></table></div>
+      <div class="nk-section-head nk-section"><div><h2>Recent Van Movements</h2><p>Manual issues, reissues, deliveries, and returns recorded for this van.</p></div></div>
+      <div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Date</th><th>Reference</th><th>Movement</th><th>Trip / Service Area</th><th>Products</th><th>Status</th></tr></thead><tbody id="van-stock-history"></tbody></table></div>
+    </div>
+    <div class="nk-modal-foot"><span class="nk-small nk-muted" style="margin-right:auto">Products can be manually issued to this van again whenever another load is required.</span><button class="nk-button light" data-close-modal="van-stock-modal">Close</button><button class="nk-button primary" id="van-stock-issue-more">Issue More Products</button></div>
+  </div>
+</div>
+
+<div class="nk-toast-area" id="toast-area"></div>
+<script src="/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.2" defer></script>
+</body>
+</html>

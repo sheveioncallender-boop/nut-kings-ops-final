@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_service_area_search" model="ir.ui.view">
+        <field name="name">nutkings.service.area.search</field>
+        <field name="model">nutkings.service.area</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Company" name="company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_nk_service_area_list" model="ir.ui.view">
+        <field name="name">nutkings.service.area.list</field>
+        <field name="model">nutkings.service.area</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="customer_ids" widget="many2many_tags"/>
+                <field name="truck_ids" widget="many2many_tags"/>
+                <field name="user_ids" widget="many2many_tags" groups="base.group_system"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nk_service_area_form" model="ir.ui.view">
+        <field name="name">nutkings.service.area.form</field>
+        <field name="model">nutkings.service.area</field>
+        <field name="arch" type="xml">
+            <form string="Nut Kings Service Area">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_customers" icon="fa-building">
+                            <div class="o_stat_info"><span class="o_stat_text">Customers</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Example: East Trinidad"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="truck_ids" widget="many2many_tags"/>
+                            <field name="user_ids" widget="many2many_tags" groups="base.group_system"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Customers">
+                            <field name="customer_ids" context="{'default_nk_service_area_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="nk_customer_code"/>
+                                    <field name="phone"/>
+                                    <field name="nk_route"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes"><field name="notes" placeholder="Coverage, delivery days, route notes, or dispatcher guidance..."/></page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nk_service_areas" model="ir.actions.act_window">
+        <field name="name">Service Areas</field>
+        <field name="res_model">nutkings.service.area</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nk_service_area_search"/>
+    </record>
+
+    <record id="view_nk_partner_service_area" model="ir.ui.view">
+        <field name="name">res.partner.form.nutkings.service.area</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_partner_form_nk"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='nk_route']" position="after">
+                <field name="nk_service_area_id" invisible="not nk_is_customer"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_truck_service_areas" model="ir.ui.view">
+        <field name="name">nutkings.truck.form.service.areas</field>
+        <field name="model">nutkings.truck</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_nk_truck_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_team_ids']" position="after">
+                <field name="service_area_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_trip_service_area" model="ir.ui.view">
+        <field name="name">nutkings.trip.form.service.area</field>
+        <field name="model">nutkings.trip</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_nk_trip_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='route_name']" position="before">
+                <field name="service_area_id" readonly="state in ('loading', 'in_progress', 'reconciliation')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_trip_list_service_area" model="ir.ui.view">
+        <field name="name">nutkings.trip.list.service.area</field>
+        <field name="model">nutkings.trip</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_nk_trip_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='route_name']" position="before">
+                <field name="service_area_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_trip_search_service_area" model="ir.ui.view">
+        <field name="name">nutkings.trip.search.service.area</field>
+        <field name="model">nutkings.trip</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_nk_trip_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='route_name']" position="before"><field name="service_area_id"/></xpath>
+            <xpath expr="//filter[@name='group_truck']" position="before"><filter string="Service Area" name="group_service_area" context="{'group_by': 'service_area_id'}"/></xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_truck_list_service_areas" model="ir.ui.view">
+        <field name="name">nutkings.truck.list.service.areas</field>
+        <field name="model">nutkings.truck</field>
+        <field name="inherit_id" ref="nut_kings_ops.view_nk_truck_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_driver_id']" position="after"><field name="service_area_ids" widget="many2many_tags" optional="show"/></xpath>
+        </field>
+    </record>
+
+    <record id="view_users_form_nutkings_areas" model="ir.ui.view">
+        <field name="name">res.users.form.nutkings.service.areas</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Nut Kings Ops" groups="base.group_system">
+                    <group>
+                        <field name="nk_service_area_ids" widget="many2many_tags"/>
+                    </group>
+                    <div class="text-muted">Workspace roles and service-area assignments can also be managed from the Nut Kings frontend.</div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_nk_service_areas" name="Service Areas" parent="menu_nk_configuration_root" action="action_nk_service_areas" sequence="5" groups="base.group_system"/>
+</odoo>

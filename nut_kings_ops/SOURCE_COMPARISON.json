@@ -1,0 +1,418 @@
+{
+  "source_archive": "nut_kings_ops-19.0.1.4.1(1).zip",
+  "source_archive_sha256": "72af14d0c463099760434ddc6cc074515ff8ee4ee592fae517632e6f565ce68d",
+  "source_version": "19.0.1.4.1",
+  "updated_version": "19.0.1.4.2",
+  "scope": "Focused update of the uploaded module; no replacement interface. Existing van implementation retained for later acceptance.",
+  "original_file_count": 57,
+  "unchanged_original_files": [
+    "RELEASE_NOTES_v1_4_1.md",
+    "VALIDATION_v1_4_1.md",
+    "__init__.py",
+    "controllers/__init__.py",
+    "data/reasons.xml",
+    "data/sequences.xml",
+    "hooks.py",
+    "models/__init__.py",
+    "models/dashboard.py",
+    "models/partner.py",
+    "models/product.py",
+    "models/reason.py",
+    "models/service_area.py",
+    "models/setup.py",
+    "models/staff.py",
+    "models/trip.py",
+    "models/truck.py",
+    "security/ir.model.access.csv",
+    "security/rules.xml",
+    "static/description/icon-192.png",
+    "static/description/icon-512.png",
+    "static/description/icon.png",
+    "static/description/index.html",
+    "static/img/nut_kings_logo.png",
+    "static/img/nut_kings_logo.webp",
+    "static/src/scss/nut_kings_backend.scss",
+    "static/workspace/app-v1.4.1.css",
+    "static/workspace/manifest.webmanifest",
+    "static/workspace/reset.html",
+    "static/workspace/workspace-login-v1.4.1.css",
+    "static/workspace/workspace-login-v1.4.1.js",
+    "views/dashboard_views.xml",
+    "views/partner_views.xml",
+    "views/physical_inventory_views.xml",
+    "views/product_views.xml",
+    "views/reason_views.xml",
+    "views/report_views.xml",
+    "views/role_service_area_views.xml",
+    "views/staff_views.xml",
+    "views/trip_views.xml",
+    "views/truck_views.xml"
+  ],
+  "modified_original_files": [
+    "README.md",
+    "__manifest__.py",
+    "controllers/api.py",
+    "controllers/workspace.py",
+    "models/operations_access.py",
+    "models/picking.py",
+    "models/sync_event.py",
+    "reports/transfer_report.xml",
+    "security/roles.xml",
+    "static/workspace/app-v1.4.1.js",
+    "static/workspace/index.html",
+    "static/workspace/login.html",
+    "static/workspace/sw.js",
+    "views/menus.xml",
+    "views/picking_views.xml",
+    "views/sync_views.xml"
+  ],
+  "added_files": [
+    "UPGRADE_1_4_2.md",
+    "static/workspace/workspace-access.css",
+    "tests/__init__.py",
+    "tests/test_workspace_upgrade.py",
+    "tools/test_access_patch.py",
+    "workspace_policy.py"
+  ],
+  "removed_files": [],
+  "preservation_checks": {
+    "original_workspace_dom_structure": "passed",
+    "original_dashboard_css": "byte-identical",
+    "original_login_css": "byte-identical",
+    "original_backend_scss": "byte-identical",
+    "original_brand_images": "byte-identical",
+    "stock_setup_product_truck_trip_models": "byte-identical",
+    "offline_database_name_and_version": "unchanged",
+    "original_queue_adaptation": "byte-identical",
+    "xml_references_and_ids": "passed"
+  },
+  "verification": {
+    "isolated_logic_tests": 12,
+    "role_entrance_combinations": 16,
+    "python_syntax": "passed",
+    "javascript_syntax": "passed",
+    "xml_manifest_and_local_references": "passed",
+    "native_odoo_tests_included": 5,
+    "native_odoo_tests_executed": false,
+    "visual_browser_testing_performed": false,
+    "deployed": false
+  },
+  "file_hashes": [
+    {
+      "path": "README.md",
+      "original_sha256": "0de3fbed77e05ce16bacf528ae558f964513101f14c887cb89892e131b8cbe54",
+      "updated_sha256": "749fb769834b481414fb90e2bea2aacdab286cd4b9803c8df5e668fc3e383acc"
+    },
+    {
+      "path": "RELEASE_NOTES_v1_4_1.md",
+      "original_sha256": "a407aa31e8c0694730db8eb45f8477286c891b704c4e7e0ddb1a3cfaae0afcbb",
+      "updated_sha256": "a407aa31e8c0694730db8eb45f8477286c891b704c4e7e0ddb1a3cfaae0afcbb"
+    },
+    {
+      "path": "UPGRADE_1_4_2.md",
+      "original_sha256": null,
+      "updated_sha256": "9f3dc6d2212498b1c51379369d6ccbcae8fde46766e98899b7442d4dddb1d42c"
+    },
+    {
+      "path": "VALIDATION_v1_4_1.md",
+      "original_sha256": "9c70999825ce8339fa7e24cf91a358bb9ea6c13894cf35bcf20d5430de9642b8",
+      "updated_sha256": "9c70999825ce8339fa7e24cf91a358bb9ea6c13894cf35bcf20d5430de9642b8"
+    },
+    {
+      "path": "__init__.py",
+      "original_sha256": "9723d3eb2dd460a27378bef8c47818bb27db755f70c3f026de57330ab326fa49",
+      "updated_sha256": "9723d3eb2dd460a27378bef8c47818bb27db755f70c3f026de57330ab326fa49"
+    },
+    {
+      "path": "__manifest__.py",
+      "original_sha256": "eafc10181caea4edb799f9be927345fa9502319edc3bcf21aa49cbc442cac0b9",
+      "updated_sha256": "30204af78eaaaf78d52eda604e33cbadad5435dc7d4c91a5a9ce73238d9587d7"
+    },
+    {
+      "path": "controllers/__init__.py",
+      "original_sha256": "1e6fa1bec5674b2b6fcd7c540676712b3138b3caaada855acf54a8a447fa83d6",
+      "updated_sha256": "1e6fa1bec5674b2b6fcd7c540676712b3138b3caaada855acf54a8a447fa83d6"
+    },
+    {
+      "path": "controllers/api.py",
+      "original_sha256": "86cf52df291d7250ab380f89af6d3e1aba95cd65214506545c7801873c40f7af",
+      "updated_sha256": "d0cd679c68016d1733480e2dd2f12a567c3e50ebeb9c63ff60f3b2ba09215014"
+    },
+    {
+      "path": "controllers/workspace.py",
+      "original_sha256": "1287dab7908b91bdc5f009011f60d453591445204d4982d3192bc295e70f5c48",
+      "updated_sha256": "afe12acd483f8189ab186749ed4e152878e046bcd667fc41b318cb0fcb3ed1ab"
+    },
+    {
+      "path": "data/reasons.xml",
+      "original_sha256": "86ff98726cd5ec90d73331f1a37a8f861ce78dd58806b060d86fc80132a5fb1c",
+      "updated_sha256": "86ff98726cd5ec90d73331f1a37a8f861ce78dd58806b060d86fc80132a5fb1c"
+    },
+    {
+      "path": "data/sequences.xml",
+      "original_sha256": "7a76b75627f530c90da39ef3c619afc4ed3c756ea7f4a8115fa449150b57ecf7",
+      "updated_sha256": "7a76b75627f530c90da39ef3c619afc4ed3c756ea7f4a8115fa449150b57ecf7"
+    },
+    {
+      "path": "hooks.py",
+      "original_sha256": "7117db38a6e65771380e5b7882fdecb28cb461fc226bea048e61fbd530c40fdb",
+      "updated_sha256": "7117db38a6e65771380e5b7882fdecb28cb461fc226bea048e61fbd530c40fdb"
+    },
+    {
+      "path": "models/__init__.py",
+      "original_sha256": "2957167c0f884843632c7dd504df0cc043e41ec039576d0bad055e868f2c6965",
+      "updated_sha256": "2957167c0f884843632c7dd504df0cc043e41ec039576d0bad055e868f2c6965"
+    },
+    {
+      "path": "models/dashboard.py",
+      "original_sha256": "830781cea53a755746338c5c6e33defc1d7e0b0ea2684b0ecdbfab688d83b12a",
+      "updated_sha256": "830781cea53a755746338c5c6e33defc1d7e0b0ea2684b0ecdbfab688d83b12a"
+    },
+    {
+      "path": "models/operations_access.py",
+      "original_sha256": "99f5596e317d839407858182d8737be2a1e13153ee96c121eb7926846d0d73a5",
+      "updated_sha256": "b5fdf2f8dff68995becd550df6bfcc7b89ae9c26e4f86f5d1ec574b7c5392e8b"
+    },
+    {
+      "path": "models/partner.py",
+      "original_sha256": "bab31d087a7067dec5704dca821111a0f68301384819628fc9fb6521f36527c0",
+      "updated_sha256": "bab31d087a7067dec5704dca821111a0f68301384819628fc9fb6521f36527c0"
+    },
+    {
+      "path": "models/picking.py",
+      "original_sha256": "98597e7a4ce35098ab99c6890c900df54b708479419e2fd30279fc2eff61d59a",
+      "updated_sha256": "a3a613bbc514c38101bd51bff8a059adc7c36619adfb107167cece92432db566"
+    },
+    {
+      "path": "models/product.py",
+      "original_sha256": "1b6ca2533427400b508a6f8dd4d1e1ca5d19ac82b0fab3333e4842cd53fbb093",
+      "updated_sha256": "1b6ca2533427400b508a6f8dd4d1e1ca5d19ac82b0fab3333e4842cd53fbb093"
+    },
+    {
+      "path": "models/reason.py",
+      "original_sha256": "6fe37714e308d7d14824633e64e353a13dbcd5815c5d482f62e5379c3404ae45",
+      "updated_sha256": "6fe37714e308d7d14824633e64e353a13dbcd5815c5d482f62e5379c3404ae45"
+    },
+    {
+      "path": "models/service_area.py",
+      "original_sha256": "5770359a35149fa72c8d130743bbea0cd4062f41ac5e92046802a1a065d9ad2e",
+      "updated_sha256": "5770359a35149fa72c8d130743bbea0cd4062f41ac5e92046802a1a065d9ad2e"
+    },
+    {
+      "path": "models/setup.py",
+      "original_sha256": "145a1d6377821d0ce9d609b7d6e8ee558d88983a7e936aa0ff6ca3b55a06cd12",
+      "updated_sha256": "145a1d6377821d0ce9d609b7d6e8ee558d88983a7e936aa0ff6ca3b55a06cd12"
+    },
+    {
+      "path": "models/staff.py",
+      "original_sha256": "678417a1d557c0ce733490e0a97a1e7e496b12671c65a710fafe77c7475bc763",
+      "updated_sha256": "678417a1d557c0ce733490e0a97a1e7e496b12671c65a710fafe77c7475bc763"
+    },
+    {
+      "path": "models/sync_event.py",
+      "original_sha256": "d8e4df988077e15b4da015df3d5cbf777c07868b35490f5c46942034fe442206",
+      "updated_sha256": "fec682601f66ccaa4b45eecbd97f121868bb7e946e1ab71905248341e5ce546b"
+    },
+    {
+      "path": "models/trip.py",
+      "original_sha256": "47ac6b60f298cc64e056e320f619b8a667d66fb4df880c5c1f1213b882b382ba",
+      "updated_sha256": "47ac6b60f298cc64e056e320f619b8a667d66fb4df880c5c1f1213b882b382ba"
+    },
+    {
+      "path": "models/truck.py",
+      "original_sha256": "5f8d6b66fa6ee40d305796209e602720a78fbfe6adee517a4b72809cd26e0a3b",
+      "updated_sha256": "5f8d6b66fa6ee40d305796209e602720a78fbfe6adee517a4b72809cd26e0a3b"
+    },
+    {
+      "path": "reports/transfer_report.xml",
+      "original_sha256": "caa874b24951ab0677c662aaa84c01def12f7d8227230dfc62dabca36f4c6fdd",
+      "updated_sha256": "d1fc39c2d121b305180c5362b80c7ff23116d55e5159135016bc2273fd3160fa"
+    },
+    {
+      "path": "security/ir.model.access.csv",
+      "original_sha256": "67cf2109ef283fbb99b52e5386adf1c6ea2187d41541b92a04200234ddbd64ca",
+      "updated_sha256": "67cf2109ef283fbb99b52e5386adf1c6ea2187d41541b92a04200234ddbd64ca"
+    },
+    {
+      "path": "security/roles.xml",
+      "original_sha256": "1dccdac0ca6d7d8fd30ff6ffefaba9292a13f5e0c8541c41f1b2191c91cc6614",
+      "updated_sha256": "9c106d662af4ec7a20b0aef8680182d940eee235d479028b924c392162a5465c"
+    },
+    {
+      "path": "security/rules.xml",
+      "original_sha256": "00074161118331442c2edb96622052d717b8e64a9f714bd6c13b051a5c39edaf",
+      "updated_sha256": "00074161118331442c2edb96622052d717b8e64a9f714bd6c13b051a5c39edaf"
+    },
+    {
+      "path": "static/description/icon-192.png",
+      "original_sha256": "f37054853761ebdfe4ff8cae2273ce9d91fc6422e768af808891ddc5f77e161f",
+      "updated_sha256": "f37054853761ebdfe4ff8cae2273ce9d91fc6422e768af808891ddc5f77e161f"
+    },
+    {
+      "path": "static/description/icon-512.png",
+      "original_sha256": "a27c638c4de683974e09a522820008002ffe0b0f2a0d2ee04b49df68b21b178b",
+      "updated_sha256": "a27c638c4de683974e09a522820008002ffe0b0f2a0d2ee04b49df68b21b178b"
+    },
+    {
+      "path": "static/description/icon.png",
+      "original_sha256": "27675f22a8a68f6542a61a38042603b5db2a3cd8bf3420de37da3a3bfc09efec",
+      "updated_sha256": "27675f22a8a68f6542a61a38042603b5db2a3cd8bf3420de37da3a3bfc09efec"
+    },
+    {
+      "path": "static/description/index.html",
+      "original_sha256": "3b14b3abd008cd836e8f2f5c62645e7f37587450ea24d1d88ec15a8afefaf4ea",
+      "updated_sha256": "3b14b3abd008cd836e8f2f5c62645e7f37587450ea24d1d88ec15a8afefaf4ea"
+    },
+    {
+      "path": "static/img/nut_kings_logo.png",
+      "original_sha256": "e5ef3a57c24f590456bdc84cdf7abecac423770cba007c9d5fb3eaea47c075a4",
+      "updated_sha256": "e5ef3a57c24f590456bdc84cdf7abecac423770cba007c9d5fb3eaea47c075a4"
+    },
+    {
+      "path": "static/img/nut_kings_logo.webp",
+      "original_sha256": "7d8ca7c4cd3124a93e9358df4efcf028c5c5e794a3c47a081a5f1d8753819213",
+      "updated_sha256": "7d8ca7c4cd3124a93e9358df4efcf028c5c5e794a3c47a081a5f1d8753819213"
+    },
+    {
+      "path": "static/src/scss/nut_kings_backend.scss",
+      "original_sha256": "77718d3e3e83dbfa8b68cac3e53cd9934e933172db9a3f284d53243fd9ef271f",
+      "updated_sha256": "77718d3e3e83dbfa8b68cac3e53cd9934e933172db9a3f284d53243fd9ef271f"
+    },
+    {
+      "path": "static/workspace/app-v1.4.1.css",
+      "original_sha256": "2155a718815ec327d1daf05deef30c63c403b136c164b233213e486494d0f62a",
+      "updated_sha256": "2155a718815ec327d1daf05deef30c63c403b136c164b233213e486494d0f62a"
+    },
+    {
+      "path": "static/workspace/app-v1.4.1.js",
+      "original_sha256": "0ed63ea19c1b397f52328ac0678d42899e90e54b7bff546dbb92ed4f7df757f5",
+      "updated_sha256": "5de9aa084be8d74a98da472dbea53c73190d0263ac2ee6da3fd9e8980f137530"
+    },
+    {
+      "path": "static/workspace/index.html",
+      "original_sha256": "461b6bd1441adcec851e9796533ab9a537acc8ba89d4c1fc9b7a24e3012eef05",
+      "updated_sha256": "045eb480e812e175ebf67621adffecdef6bd2ba9d809de361a7bbb9a4917ea82"
+    },
+    {
+      "path": "static/workspace/login.html",
+      "original_sha256": "cc8db9fe101eff4fcd81b04035763f0609d2c977cfd46020bf0674095ebd5a8a",
+      "updated_sha256": "1f670432e9c385d283db6b8d34c1b41a488fd3c211f58aff80805eb9d1c303e6"
+    },
+    {
+      "path": "static/workspace/manifest.webmanifest",
+      "original_sha256": "84d799156dd06f94a511a47b6ad1bd47c51091bd4979c83788629b63ef73e6d1",
+      "updated_sha256": "84d799156dd06f94a511a47b6ad1bd47c51091bd4979c83788629b63ef73e6d1"
+    },
+    {
+      "path": "static/workspace/reset.html",
+      "original_sha256": "f96d14e69fd3271832a1930e4f9263191f3effa5023aeae2e660f4abaf45c9d3",
+      "updated_sha256": "f96d14e69fd3271832a1930e4f9263191f3effa5023aeae2e660f4abaf45c9d3"
+    },
+    {
+      "path": "static/workspace/sw.js",
+      "original_sha256": "511727ac0578189286701469e9aadd0c1f114c65a5046962dd2ef9024aa64997",
+      "updated_sha256": "5249921dedb01626b32a98237f10a2989d8e65bc3fe860396608e8ecd1db2e59"
+    },
+    {
+      "path": "static/workspace/workspace-access.css",
+      "original_sha256": null,
+      "updated_sha256": "f37c274fbe9f7ca9d213675f6c94a49090e031e86efd05b97f818951063787e2"
+    },
+    {
+      "path": "static/workspace/workspace-login-v1.4.1.css",
+      "original_sha256": "0d745dec300589c9883b4db08db224a3f465beb443664825aa5cdf928e51b0f9",
+      "updated_sha256": "0d745dec300589c9883b4db08db224a3f465beb443664825aa5cdf928e51b0f9"
+    },
+    {
+      "path": "static/workspace/workspace-login-v1.4.1.js",
+      "original_sha256": "a619efda21461338b432cce3e4feae129034a9f0e00d3ddf464aa890a8e8b03b",
+      "updated_sha256": "a619efda21461338b432cce3e4feae129034a9f0e00d3ddf464aa890a8e8b03b"
+    },
+    {
+      "path": "tests/__init__.py",
+      "original_sha256": null,
+      "updated_sha256": "2347980d6a3efc7e74aff602eaf10093267a0b7c85d84375dadfb23aae8413a4"
+    },
+    {
+      "path": "tests/test_workspace_upgrade.py",
+      "original_sha256": null,
+      "updated_sha256": "8b2b3b9a18d81c63673f208a57ff9d84cafeaf72d51d1a5ef990443d7e7e9835"
+    },
+    {
+      "path": "tools/test_access_patch.py",
+      "original_sha256": null,
+      "updated_sha256": "af3f3de584c662fcf9a2d1d31e6bbbd903d2b7887d7839cbe8d22bde79cfeb0e"
+    },
+    {
+      "path": "views/dashboard_views.xml",
+      "original_sha256": "7772c23088748d68e423f56a398b3e4f1ed330256ce2364b424cf25a19c0d696",
+      "updated_sha256": "7772c23088748d68e423f56a398b3e4f1ed330256ce2364b424cf25a19c0d696"
+    },
+    {
+      "path": "views/menus.xml",
+      "original_sha256": "b0bb54ef835813c1dc9d6a80668b9df92567fcb8ce48747a02b3a2303bc265a4",
+      "updated_sha256": "4981073777d45738f79fb09e5dbb5f25f51e7454f8c2351db07e3170d082ffbf"
+    },
+    {
+      "path": "views/partner_views.xml",
+      "original_sha256": "5e8b8b9fe5599b1dd2d1513a39ac1830409af1785e7bc05a9efe36186dc5069e",
+      "updated_sha256": "5e8b8b9fe5599b1dd2d1513a39ac1830409af1785e7bc05a9efe36186dc5069e"
+    },
+    {
+      "path": "views/physical_inventory_views.xml",
+      "original_sha256": "c98f4db097b966ebe61fd62a139b6896ae5aeea78586664b85acb4e69d649c3e",
+      "updated_sha256": "c98f4db097b966ebe61fd62a139b6896ae5aeea78586664b85acb4e69d649c3e"
+    },
+    {
+      "path": "views/picking_views.xml",
+      "original_sha256": "4b75069ebe38216779d4d03d471c0e585ff3e435b4c23d84ea4aa3d6765e5519",
+      "updated_sha256": "1d4b23ecd97a2c574b2024988d70bb69df2d8f86e8aee5c9ea3c68aa9e0f3004"
+    },
+    {
+      "path": "views/product_views.xml",
+      "original_sha256": "6428d54d7d0e6b4f7dd8a13e6a2c9b08badcc0250397a4b9aba4e887568c1a4f",
+      "updated_sha256": "6428d54d7d0e6b4f7dd8a13e6a2c9b08badcc0250397a4b9aba4e887568c1a4f"
+    },
+    {
+      "path": "views/reason_views.xml",
+      "original_sha256": "6666f52708304dd5c0e87871fd708398a3eef231be38b8a50047f28414e01769",
+      "updated_sha256": "6666f52708304dd5c0e87871fd708398a3eef231be38b8a50047f28414e01769"
+    },
+    {
+      "path": "views/report_views.xml",
+      "original_sha256": "67f10eeb2280a31e29427de8fbe98b1806b280aa8cdcf46336116a498b631140",
+      "updated_sha256": "67f10eeb2280a31e29427de8fbe98b1806b280aa8cdcf46336116a498b631140"
+    },
+    {
+      "path": "views/role_service_area_views.xml",
+      "original_sha256": "4e9411fd8e753fd6fa4bafef0f01db4ecb1ec4738225a97d65a3b978444f41b9",
+      "updated_sha256": "4e9411fd8e753fd6fa4bafef0f01db4ecb1ec4738225a97d65a3b978444f41b9"
+    },
+    {
+      "path": "views/staff_views.xml",
+      "original_sha256": "99acc4beb13fb999fe7158a17abbf9a5f4dc8d08c7fe2ef97de6849acc3cb0bb",
+      "updated_sha256": "99acc4beb13fb999fe7158a17abbf9a5f4dc8d08c7fe2ef97de6849acc3cb0bb"
+    },
+    {
+      "path": "views/sync_views.xml",
+      "original_sha256": "b1bc87f9b25bd74310bbd5bdafc7f3fd448b074c07890ae5f8d02227ada88fdf",
+      "updated_sha256": "bc5cf31bf276903c8c88ae227b3907b37b86a77439ade1771c225043a2daecc1"
+    },
+    {
+      "path": "views/trip_views.xml",
+      "original_sha256": "2046cad1bed141ee6fa14f33ea371537d03d47001e3d888865b7dfc864474ad8",
+      "updated_sha256": "2046cad1bed141ee6fa14f33ea371537d03d47001e3d888865b7dfc864474ad8"
+    },
+    {
+      "path": "views/truck_views.xml",
+      "original_sha256": "6a0e034bf3a0828fa6051c8027b4991b4a830f61ea54cf827e0fa755c6cb43fb",
+      "updated_sha256": "6a0e034bf3a0828fa6051c8027b4991b4a830f61ea54cf827e0fa755c6cb43fb"
+    },
+    {
+      "path": "workspace_policy.py",
+      "original_sha256": null,
+      "updated_sha256": "64c4a8dd0f96414100ee9d5f4ddf8a04eff1c67e72ff52f6e0967be67a66cd5f"
+    }
+  ],
+  "note": "This audit and the generated change patch are excluded from their own file listings."
+}

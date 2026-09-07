@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="reason_damage" model="nutkings.movement.reason"><field name="name">Damaged</field><field name="code">DAMAGE</field><field name="applies_to">all</field><field name="requires_note">1</field></record>
+    <record id="reason_expired" model="nutkings.movement.reason"><field name="name">Expired</field><field name="code">EXPIRED</field><field name="applies_to">all</field><field name="requires_note">1</field></record>
+    <record id="reason_supplier_return" model="nutkings.movement.reason"><field name="name">Supplier Return</field><field name="code">SUPPLIER_RETURN</field><field name="applies_to">raw</field></record>
+    <record id="reason_customer_return" model="nutkings.movement.reason"><field name="name">Customer Return</field><field name="code">CUSTOMER_RETURN</field><field name="applies_to">distribution</field></record>
+    <record id="reason_promotion" model="nutkings.movement.reason"><field name="name">Promotion / Sample</field><field name="code">PROMOTION</field><field name="applies_to">all</field></record>
+    <record id="reason_adjustment" model="nutkings.movement.reason"><field name="name">Approved Adjustment</field><field name="code">ADJUSTMENT</field><field name="applies_to">all</field><field name="requires_note">1</field></record>
+</odoo>

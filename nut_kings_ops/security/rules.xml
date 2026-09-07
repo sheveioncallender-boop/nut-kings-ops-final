@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_nk_staff_company" model="ir.rule"><field name="name">Nut Kings Staff: allowed companies</field><field name="model_id" ref="model_nutkings_staff"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_truck_company" model="ir.rule"><field name="name">Nut Kings Vans: allowed companies</field><field name="model_id" ref="model_nutkings_truck"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_trip_company" model="ir.rule"><field name="name">Nut Kings Trips: allowed companies</field><field name="model_id" ref="model_nutkings_trip"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_trip_line_company" model="ir.rule"><field name="name">Nut Kings Trip Lines: allowed companies</field><field name="model_id" ref="model_nutkings_trip_line"/><field name="domain_force">[('trip_id.company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_sync_company" model="ir.rule"><field name="name">Nut Kings Sync Events: allowed companies</field><field name="model_id" ref="model_nutkings_sync_event"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_dashboard_company" model="ir.rule"><field name="name">Nut Kings Dashboard: allowed companies</field><field name="model_id" ref="model_nutkings_backend_dashboard"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+    <record id="rule_nk_service_area_company" model="ir.rule"><field name="name">Nut Kings Service Areas: allowed companies</field><field name="model_id" ref="model_nutkings_service_area"/><field name="domain_force">[('company_id', 'in', company_ids)]</field></record>
+
+</odoo>

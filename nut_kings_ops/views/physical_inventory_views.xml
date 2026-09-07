@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_nk_raw_physical_inventory" model="ir.actions.server">
+        <field name="name">Raw Materials Physical Inventory</field>
+        <field name="model_id" ref="stock.model_stock_quant"/>
+        <field name="state">code</field>
+        <field name="code">action = env['stock.quant'].action_nk_raw_physical_inventory()</field>
+    </record>
+    <record id="action_nk_finished_physical_inventory" model="ir.actions.server">
+        <field name="name">Finished Goods Physical Inventory</field>
+        <field name="model_id" ref="stock.model_stock_quant"/>
+        <field name="state">code</field>
+        <field name="code">action = env['stock.quant'].action_nk_finished_physical_inventory()</field>
+    </record>
+</odoo>

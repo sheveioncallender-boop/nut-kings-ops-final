@@ -1,0 +1,3 @@
+/* The new selector uses the existing login input styling. Original CSS is unchanged. */
+.nk-login-field select { width: 100%; height: 54px; padding: 0 15px; border: 1px solid var(--nk-line); border-radius: 12px; color: var(--nk-ink); background: #fff; outline: none; font: inherit; transition: border-color .16s ease, box-shadow .16s ease; }
+.nk-login-field select:focus { border-color: #d7a900; box-shadow: 0 0 0 4px rgba(255,203,37,.24); }

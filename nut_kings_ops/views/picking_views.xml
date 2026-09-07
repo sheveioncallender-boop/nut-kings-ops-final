@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_stock_picking_form" model="ir.ui.view">
+        <field name="name">stock.picking.form.nutkings.ops</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="priority" eval="90"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="before">
+                <field name="nk_is_operation" invisible="1"/>
+                <group string="Nut Kings Transfer Details" invisible="not nk_is_operation">
+                    <group>
+                        <field name="picking_type_id" string="Operation Type" readonly="state in ('done', 'cancel')"/>
+                        <field name="location_id" string="Source Location" readonly="state in ('done', 'cancel')"/>
+                        <field name="location_dest_id" string="Destination Location" readonly="state in ('done', 'cancel')"/>
+                        <field name="partner_id" string="Customer / Company / Supplier" readonly="state in ('done', 'cancel')"/>
+                    </group>
+                    <group>
+                        <field name="nk_truck_id" invisible="nk_operation_kind not in ('finished_to_truck', 'customer_delivery', 'truck_return')" readonly="state in ('done', 'cancel')"/>
+                        <field name="nk_trip_id" invisible="nk_operation_kind not in ('finished_to_truck', 'customer_delivery', 'truck_return')" readonly="state in ('done', 'cancel')"/>
+                        <field name="nk_reason_id" invisible="not nk_reason_id and state in ('done', 'cancel')" readonly="state in ('done', 'cancel')"/>
+                        <field name="nk_reference"/>
+                        <field name="nk_workspace_user_id" readonly="1"/>
+                        <field name="nk_created_offline" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='extra']" position="inside">
+                <group string="Nut Kings Synchronization" invisible="not nk_is_operation">
+                    <field name="nk_sync_uid" readonly="1"/>
+                    <field name="nk_device_name" readonly="1"/>
+                    <field name="nk_workspace_user_id" readonly="1"/>
+                    <field name="nk_created_offline" readonly="1"/>
+                    <field name="nk_operation_kind" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_nk_stock_picking_search" model="ir.ui.view">
+        <field name="name">stock.picking.search.nutkings.ops</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="picking_type_id"/>
+                <field name="nk_truck_id"/>
+                <field name="nk_trip_id"/>
+                <field name="nk_workspace_user_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Waiting" name="waiting" domain="[('state', 'in', ('confirmed', 'waiting', 'partially_available'))]"/>
+                <filter string="Ready" name="ready" domain="[('state', '=', 'assigned')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Operation Type" name="group_operation_type" context="{'group_by': 'picking_type_id'}"/>
+                <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Customer / Supplier" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Van" name="group_truck" context="{'group_by': 'nk_truck_id'}"/>
+                <filter string="Trip" name="group_trip" context="{'group_by': 'nk_trip_id'}"/>
+                <filter string="Scheduled Month" name="group_month" context="{'group_by': 'scheduled_date:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nk_stock_transfers" model="ir.actions.act_window">
+        <field name="name">Stock Operations</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,kanban,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True)]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+        <field name="context">{'contact_display': 'partner_address'}</field>
+    </record>
+
+    <record id="action_nk_raw_transfers" model="ir.actions.act_window">
+        <field name="name">Raw Materials Operations</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', 'in', ('raw_receipt', 'raw_issue'))]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+
+    <record id="action_nk_raw_receipts" model="ir.actions.act_window">
+        <field name="name">Raw Materials — Receiving</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'raw_receipt')]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+
+    <record id="action_nk_raw_issues" model="ir.actions.act_window">
+        <field name="name">Raw Materials — Issuing</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'raw_issue')]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+
+    <record id="action_nk_finished_transfers" model="ir.actions.act_window">
+        <field name="name">Finished Goods Operations</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', 'in', ('finished_receipt', 'finished_to_truck', 'customer_delivery', 'truck_return'))]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+
+    <record id="action_nk_finished_receipts" model="ir.actions.act_window">
+        <field name="name">Finished Goods — Receiving</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'finished_receipt')]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+
+    <record id="action_nk_distribution_transfers" model="ir.actions.act_window">
+        <field name="name">Van Distribution Operations</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', 'in', ('finished_to_truck', 'customer_delivery', 'truck_return'))]</field>
+        <field name="search_view_id" ref="view_nk_stock_picking_search"/>
+    </record>
+</odoo>

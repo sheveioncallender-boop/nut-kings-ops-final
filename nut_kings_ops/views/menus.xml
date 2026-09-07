@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_nk_workspace" model="ir.actions.act_url">
+        <field name="name">Nut Kings Ops</field>
+        <field name="url">/nutkings/</field>
+        <field name="target">self</field>
+    </record>
+    <record id="action_nk_rapid_scan" model="ir.actions.act_url">
+        <field name="name">Rapid Scan</field>
+        <field name="url">/nutkings/#rapid</field>
+        <field name="target">self</field>
+    </record>
+    <menuitem id="menu_nk_root" name="Nut Kings Ops" action="action_nk_open_backend_dashboard" sequence="1" web_icon="nut_kings_ops,static/description/icon.png" groups="base.group_system"/>
+    <menuitem id="menu_nk_workspace" name="Operations Workspace" parent="menu_nk_root" action="action_nk_workspace" sequence="1" groups="base.group_system"/>
+    <menuitem id="menu_nk_rapid_scan" name="Rapid Scan" parent="menu_nk_root" action="action_nk_rapid_scan" sequence="2" groups="base.group_system"/>
+    <menuitem id="menu_nk_backend_dashboard" name="Backend" parent="menu_nk_root" action="action_nk_open_backend_dashboard" sequence="3" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_raw_root" name="Raw Materials" parent="menu_nk_root" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_nk_raw_products" name="Raw Material Products" parent="menu_nk_raw_root" action="action_nk_raw_products" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_nk_raw_operations" name="Raw Materials — Receiving" parent="menu_nk_raw_root" action="action_nk_raw_receipts" sequence="20" groups="base.group_system"/>
+    <menuitem id="menu_nk_raw_issues" name="Raw Materials — Issuing" parent="menu_nk_raw_root" action="action_nk_raw_issues" sequence="21" groups="base.group_system"/>
+    <menuitem id="menu_nk_raw_inventory" name="Physical Inventory" parent="menu_nk_raw_root" action="action_nk_raw_physical_inventory" sequence="30" groups="base.group_system"/>
+    <menuitem id="menu_nk_suppliers" name="Suppliers" parent="menu_nk_raw_root" action="action_nk_suppliers" sequence="40" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_finished_root" name="Finished Goods" parent="menu_nk_root" sequence="20" groups="base.group_system"/>
+    <menuitem id="menu_nk_finished_products" name="Finished Products" parent="menu_nk_finished_root" action="action_nk_finished_products" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_nk_finished_operations" name="Finished Goods — Receiving" parent="menu_nk_finished_root" action="action_nk_finished_receipts" sequence="20" groups="base.group_system"/>
+    <menuitem id="menu_nk_finished_inventory" name="Physical Inventory" parent="menu_nk_finished_root" action="action_nk_finished_physical_inventory" sequence="30" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_distribution_root" name="Distribution" parent="menu_nk_root" sequence="30" groups="base.group_system"/>
+    <menuitem id="menu_nk_distribution_operations" name="Van Distribution Operations" parent="menu_nk_distribution_root" action="action_nk_distribution_transfers" sequence="6" groups="base.group_system"/>
+    <menuitem id="menu_nk_trips" name="Distribution Trips" parent="menu_nk_distribution_root" action="action_nk_trips" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_nk_trucks" name="Vans" parent="menu_nk_distribution_root" action="action_nk_trucks" sequence="20" groups="base.group_system"/>
+    <menuitem id="menu_nk_customers" name="Customers &amp; Companies" parent="menu_nk_distribution_root" action="action_nk_customers" sequence="30" groups="base.group_system"/>
+    <menuitem id="menu_nk_staff" name="Staff &amp; Teams" parent="menu_nk_distribution_root" action="action_nk_staff" sequence="40" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_stock_operations" name="All Stock Operations" parent="menu_nk_root" action="action_nk_stock_transfers" sequence="40" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_reports_root" name="Reports" parent="menu_nk_root" sequence="50" groups="base.group_system"/>
+    <menuitem id="menu_nk_inventory_levels" name="Current Inventory" parent="menu_nk_reports_root" action="action_nk_inventory_levels" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_nk_move_history" name="Move History" parent="menu_nk_reports_root" action="action_nk_move_history" sequence="20" groups="base.group_system"/>
+    <menuitem id="menu_nk_distribution_analysis" name="Distribution Performance" parent="menu_nk_reports_root" action="action_nk_distribution_analysis" sequence="30" groups="base.group_system"/>
+    <menuitem id="menu_nk_sync_events" name="Synchronization Log" parent="menu_nk_reports_root" action="action_nk_sync_events" sequence="40" groups="base.group_system"/>
+
+    <menuitem id="menu_nk_configuration_root" name="Configuration" parent="menu_nk_root" sequence="90" groups="base.group_system"/>
+    <menuitem id="menu_nk_reasons" name="Movement Reasons" parent="menu_nk_configuration_root" action="action_nk_reasons" sequence="10" groups="base.group_system"/>
+</odoo>

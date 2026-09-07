@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_nk" model="ir.ui.view">
+        <field name="name">res.partner.form.nut.kings.ops</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Nut Kings Ops" name="nut_kings_ops">
+                    <group>
+                        <group>
+                            <field name="nk_is_customer"/>
+                            <field name="nk_is_supplier"/>
+                            <field name="nk_customer_code"/>
+                            <field name="nk_route"/>
+                        </group>
+                        <group>
+                            <field name="phone"/>
+                            <field name="nk_mobile"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    <group string="Delivery Instructions"><field name="nk_delivery_notes" nolabel="1"/></group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_nk_customers" model="ir.actions.act_window">
+        <field name="name">Customers &amp; Companies</field><field name="res_model">res.partner</field><field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('nk_is_customer','=',True)]</field><field name="context">{'default_nk_is_customer':True}</field>
+    </record>
+    <record id="action_nk_suppliers" model="ir.actions.act_window">
+        <field name="name">Suppliers</field><field name="res_model">res.partner</field><field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('nk_is_supplier','=',True)]</field><field name="context">{'default_nk_is_supplier':True}</field>
+    </record>
+</odoo>

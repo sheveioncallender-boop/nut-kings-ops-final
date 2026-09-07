@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_trip_search" model="ir.ui.view">
+        <field name="name">nutkings.trip.search</field>
+        <field name="model">nutkings.trip</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="truck_id"/>
+                <field name="driver_id"/>
+                <field name="route_name"/>
+                <filter string="Open" name="open_trips" domain="[('state', 'not in', ('done', 'cancelled'))]"/>
+                <filter string="Closed" name="closed_trips" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Van" name="group_truck" context="{'group_by': 'truck_id'}"/>
+                <filter string="Driver" name="group_driver" context="{'group_by': 'driver_id'}"/>
+                <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Departure Month" name="group_month" context="{'group_by': 'planned_departure:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_nk_trip_list" model="ir.ui.view">
+        <field name="name">nutkings.trip.list</field>
+        <field name="model">nutkings.trip</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'done'" decoration-warning="state in ('loading', 'in_progress', 'reconciliation')">
+                <field name="name"/>
+                <field name="planned_departure"/>
+                <field name="truck_id"/>
+                <field name="driver_id"/>
+                <field name="route_name"/>
+                <field name="total_loaded" sum="Loaded"/>
+                <field name="total_delivered" sum="Delivered"/>
+                <field name="total_returned" sum="Returned"/>
+                <field name="total_variance" sum="Variance" decoration-danger="total_variance != 0"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nk_trip_form" model="ir.ui.view">
+        <field name="name">nutkings.trip.form</field>
+        <field name="model">nutkings.trip</field>
+        <field name="arch" type="xml">
+            <form string="Distribution Trip">
+                <header>
+                    <button name="action_start_loading" type="object" string="Start Loading" class="oe_highlight" invisible="state != 'planned'"/>
+                    <button name="action_depart" type="object" string="Confirm Departure" class="oe_highlight" invisible="state != 'loading'"/>
+                    <button name="action_return" type="object" string="Start Reconciliation" class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <button name="action_close" type="object" string="Close Trip" class="oe_highlight" invisible="state != 'reconciliation'" groups="base.group_system"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state not in ('planned', 'loading')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="planned,loading,in_progress,reconciliation,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div>
+                    <group>
+                        <group string="Assignment">
+                            <field name="truck_id" readonly="state != 'planned'"/>
+                            <field name="driver_id" readonly="state != 'planned'"/>
+                            <field name="team_ids" widget="many2many_tags" readonly="state != 'planned'"/>
+                            <field name="route_name" readonly="state != 'planned'"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="planned_departure"/>
+                            <field name="actual_departure" readonly="1"/>
+                            <field name="actual_return" readonly="1"/>
+                            <field name="customer_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <group string="Reconciliation Totals" col="5">
+                        <field name="total_loaded" readonly="1"/>
+                        <field name="total_delivered" readonly="1"/>
+                        <field name="total_returned" readonly="1"/>
+                        <field name="total_damaged" readonly="1"/>
+                        <field name="total_variance" readonly="1" decoration-danger="total_variance != 0"/>
+                    </group>
+                    <notebook>
+                        <page string="Stock Transfers">
+                            <field name="picking_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="nk_operation_kind"/>
+                                    <field name="partner_id"/>
+                                    <field name="location_id"/>
+                                    <field name="location_dest_id"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Reconciliation">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="product_id"/>
+                                    <field name="qty_loaded"/>
+                                    <field name="qty_delivered"/>
+                                    <field name="qty_returned"/>
+                                    <field name="qty_damaged"/>
+                                    <field name="variance" decoration-danger="variance != 0"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="variance_explanation"/>
+                                <field name="variance_approved" groups="base.group_system"/>
+                            </group>
+                        </page>
+                        <page string="Notes"><field name="notes"/></page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nk_trips" model="ir.actions.act_window">
+        <field name="name">Distribution Trips</field>
+        <field name="res_model">nutkings.trip</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_nk_trip_search"/>
+    </record>
+</odoo>

@@ -1,0 +1,14 @@
+{
+  "name": "Nut Kings Ops",
+  "short_name": "Nut Kings Ops",
+  "description": "Offline-first inventory and distribution operations for Nut Kings.",
+  "start_url": "/nutkings/",
+  "scope": "/nutkings/",
+  "display": "standalone",
+  "background_color": "#17120f",
+  "theme_color": "#17120f",
+  "icons": [
+    {"src": "/nut_kings_ops/static/description/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/nut_kings_ops/static/description/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

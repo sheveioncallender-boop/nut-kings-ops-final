@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_backend_dashboard_form" model="ir.ui.view">
+        <field name="name">nutkings.backend.dashboard.form</field>
+        <field name="model">nutkings.backend.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Backend Dashboard" create="false" edit="false" delete="false">
+                <header>
+                    <button name="action_refresh" type="object" string="Refresh Dashboard" icon="fa-refresh" class="btn-primary"/>
+                    <button name="action_open_workspace" type="object" string="Operations Workspace" icon="fa-desktop"/>
+                    <button name="action_open_rapid_scan" type="object" string="Rapid Scan" icon="fa-barcode"/>
+                </header>
+                <sheet class="nk-dashboard-sheet">
+                    <field name="company_id" invisible="1"/>
+                    <div class="nk-dashboard-hero">
+                        <div class="nk-dashboard-brand-block">
+                            <img class="nk-dashboard-logo" src="/nut_kings_ops/static/img/nut_kings_logo.png" alt="Nut Kings"/>
+                            <div>
+                                <div class="nk-dashboard-eyebrow">NUT KINGS OPS</div>
+                                <h1>Backend Dashboard</h1>
+                                <p>Live stock, warehouse operations, distribution activity, and synchronization health from the native Odoo backend.</p>
+                            </div>
+                        </div>
+                        <div class="nk-dashboard-company">
+                            <span>Company</span>
+                            <field name="company_id" readonly="1" nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <div class="nk-dashboard-kpi-grid">
+                        <button name="action_open_raw_inventory" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-raw" icon="fa-cubes">
+                            <field name="raw_stock_qty" widget="statinfo" string="Raw Stock on Hand"/>
+                        </button>
+                        <button name="action_open_finished_inventory" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-finished" icon="fa-archive">
+                            <field name="finished_stock_qty" widget="statinfo" string="Finished Stock on Hand"/>
+                        </button>
+                        <button name="action_open_truck_inventory" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-truck" icon="fa-truck">
+                            <field name="truck_stock_qty" widget="statinfo" string="Stock on Vans"/>
+                        </button>
+                        <button name="action_open_low_stock" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-alert" icon="fa-exclamation-triangle">
+                            <field name="low_stock_count" widget="statinfo" string="Low Stock Products"/>
+                        </button>
+                        <button name="action_open_open_operations" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-operations" icon="fa-exchange">
+                            <field name="open_operations_count" widget="statinfo" string="Open Operations"/>
+                        </button>
+                        <button name="action_open_active_trips" type="object" class="oe_stat_button nk-dashboard-kpi nk-kpi-trip" icon="fa-road">
+                            <field name="active_trip_count" widget="statinfo" string="Active Trips"/>
+                        </button>
+                    </div>
+
+                    <div class="nk-dashboard-section nk-dashboard-quick-section">
+                        <div class="nk-dashboard-section-head">
+                            <div>
+                                <h2>Quick Operations</h2>
+                                <p>Start the most common warehouse and distribution transactions through the approved Operations Workspace; synchronized transactions remain native Odoo records.</p>
+                            </div>
+                        </div>
+                        <div class="nk-dashboard-actions">
+                            <button name="action_new_raw_receipt" type="object" string="Receive Raw Materials" icon="fa-arrow-circle-down" class="btn-primary"/>
+                            <button name="action_new_raw_issue" type="object" string="Issue Raw Materials" icon="fa-arrow-circle-up"/>
+                            <button name="action_new_finished_receipt" type="object" string="Receive Finished Goods" icon="fa-inbox"/>
+                            <button name="action_new_truck_load" type="object" string="Load Distribution Van" icon="fa-truck"/>
+                            <button name="action_new_customer_delivery" type="object" string="Customer Delivery" icon="fa-map-marker"/>
+                            <button name="action_new_truck_return" type="object" string="Return Van Stock" icon="fa-undo"/>
+                            <button name="action_new_trip" type="object" string="Create Distribution Trip" icon="fa-road"/>
+                        </div>
+                    </div>
+
+                    <div class="nk-dashboard-columns">
+                        <div class="nk-dashboard-section">
+                            <div class="nk-dashboard-section-head">
+                                <div>
+                                    <h2>Operation Status</h2>
+                                    <p>Transfers requiring action in the backend.</p>
+                                </div>
+                                <button name="action_open_all_operations" type="object" string="View All" class="btn-link"/>
+                            </div>
+                            <div class="nk-dashboard-mini-grid">
+                                <button name="action_open_draft_operations" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-pencil-square-o">
+                                    <field name="draft_operations_count" widget="statinfo" string="Draft"/>
+                                </button>
+                                <button name="action_open_waiting_operations" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-hourglass-half">
+                                    <field name="waiting_operations_count" widget="statinfo" string="Waiting"/>
+                                </button>
+                                <button name="action_open_ready_operations" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-check-circle">
+                                    <field name="ready_operations_count" widget="statinfo" string="Ready"/>
+                                </button>
+                                <button name="action_open_overdue_operations" type="object" class="oe_stat_button nk-dashboard-mini-stat nk-mini-danger" icon="fa-clock-o">
+                                    <field name="overdue_operations_count" widget="statinfo" string="Overdue"/>
+                                </button>
+                                <button name="action_open_done_today" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-calendar-check-o">
+                                    <field name="done_today_count" widget="statinfo" string="Completed Today"/>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="nk-dashboard-section">
+                            <div class="nk-dashboard-section-head">
+                                <div>
+                                    <h2>Distribution Overview</h2>
+                                    <p>Trips and van availability at a glance.</p>
+                                </div>
+                                <button name="action_open_all_trips" type="object" string="View Trips" class="btn-link"/>
+                            </div>
+                            <div class="nk-dashboard-mini-grid">
+                                <button name="action_open_available_trucks" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-check">
+                                    <field name="available_truck_count" widget="statinfo" string="Available Vans"/>
+                                </button>
+                                <button name="action_open_loading_trucks" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-cubes">
+                                    <field name="loading_truck_count" widget="statinfo" string="Loading"/>
+                                </button>
+                                <button name="action_open_on_route_trucks" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-truck">
+                                    <field name="on_route_truck_count" widget="statinfo" string="On Route"/>
+                                </button>
+                                <button name="action_open_reconciliation_trips" type="object" class="oe_stat_button nk-dashboard-mini-stat nk-mini-warning" icon="fa-balance-scale">
+                                    <field name="reconciliation_trip_count" widget="statinfo" string="To Reconcile"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nk-dashboard-columns nk-dashboard-record-columns">
+                        <div class="nk-dashboard-section">
+                            <div class="nk-dashboard-section-head">
+                                <div>
+                                    <h2>Recent Stock Operations</h2>
+                                    <p>The ten most recently scheduled Nut Kings transfers.</p>
+                                </div>
+                                <button name="action_open_all_operations" type="object" string="Open Operations" class="btn-link"/>
+                            </div>
+                            <field name="recent_picking_ids" nolabel="1" readonly="1">
+                                <list create="false" edit="false" delete="false" decoration-success="state == 'done'" decoration-danger="state == 'cancel'" decoration-warning="state in ('confirmed', 'waiting', 'partially_available')">
+                                    <field name="name" string="Reference"/>
+                                    <field name="nk_operation_kind" string="Operation"/>
+                                    <field name="partner_id" string="Customer / Supplier" optional="show"/>
+                                    <field name="nk_truck_id" optional="show"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </div>
+
+                        <div class="nk-dashboard-section">
+                            <div class="nk-dashboard-section-head">
+                                <div>
+                                    <h2>Active Distribution Trips</h2>
+                                    <p>Trips currently planned, loading, on route, or being reconciled.</p>
+                                </div>
+                                <button name="action_open_all_trips" type="object" string="Open Trips" class="btn-link"/>
+                            </div>
+                            <field name="active_trip_ids" nolabel="1" readonly="1">
+                                <list create="false" edit="false" delete="false" decoration-success="state == 'done'" decoration-warning="state == 'reconciliation'">
+                                    <field name="name" string="Trip"/>
+                                    <field name="truck_id"/>
+                                    <field name="driver_id" optional="show"/>
+                                    <field name="route_name"/>
+                                    <field name="planned_departure"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </div>
+                    </div>
+
+                    <div class="nk-dashboard-section nk-dashboard-system-section">
+                        <div class="nk-dashboard-section-head">
+                            <div>
+                                <h2>Offline Synchronization Health</h2>
+                                <p>The Operations Workspace remains unchanged; this section only reports synchronization records already stored in Odoo.</p>
+                            </div>
+                            <button name="action_open_sync_log" type="object" string="Open Synchronization Log" class="btn-link"/>
+                        </div>
+                        <div class="nk-dashboard-mini-grid nk-dashboard-sync-grid">
+                            <button name="action_open_pending_sync" type="object" class="oe_stat_button nk-dashboard-mini-stat" icon="fa-cloud-upload">
+                                <field name="pending_sync_count" widget="statinfo" string="Pending"/>
+                            </button>
+                            <button name="action_open_sync_attention" type="object" class="oe_stat_button nk-dashboard-mini-stat nk-mini-warning" icon="fa-exclamation-circle">
+                                <field name="sync_attention_count" widget="statinfo" string="Needs Attention"/>
+                            </button>
+                            <button name="action_open_sync_errors" type="object" class="oe_stat_button nk-dashboard-mini-stat nk-mini-danger" icon="fa-times-circle">
+                                <field name="sync_error_count" widget="statinfo" string="Errors"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="nk-dashboard-section nk-dashboard-inventory-tools">
+                        <div class="nk-dashboard-section-head">
+                            <div>
+                                <h2>Inventory Control</h2>
+                                <p>Open the native Odoo physical inventory flows for each warehouse.</p>
+                            </div>
+                        </div>
+                        <div class="nk-dashboard-actions">
+                            <button name="action_raw_physical_inventory" type="object" string="Raw Materials Physical Inventory" icon="fa-list-ol"/>
+                            <button name="action_finished_physical_inventory" type="object" string="Finished Goods Physical Inventory" icon="fa-list-ol"/>
+                            <button name="action_open_trucks" type="object" string="Manage Distribution Vans" icon="fa-truck"/>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nk_backend_dashboard" model="ir.actions.act_window">
+        <field name="name">Backend Dashboard</field>
+        <field name="res_model">nutkings.backend.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_nk_backend_dashboard_form"/>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="target">current</field>
+    </record>
+
+    <record id="action_nk_open_backend_dashboard" model="ir.actions.server">
+        <field name="name">Backend Dashboard</field>
+        <field name="model_id" ref="model_nutkings_backend_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_dashboard()</field>
+    </record>
+</odoo>

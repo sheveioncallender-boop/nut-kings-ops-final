@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nk_truck_list" model="ir.ui.view"><field name="name">nutkings.truck.list</field><field name="model">nutkings.truck</field><field name="arch" type="xml"><list><field name="name"/><field name="registration_number"/><field name="default_driver_id"/><field name="status"/><field name="stock_location_id"/><field name="active"/></list></field></record>
+    <record id="view_nk_truck_form" model="ir.ui.view"><field name="name">nutkings.truck.form</field><field name="model">nutkings.truck</field><field name="arch" type="xml"><form string="Nut Kings Van"><sheet><div class="oe_title"><h1><field name="name"/></h1></div><group><group><field name="registration_number"/><field name="barcode"/><field name="make"/><field name="model"/><field name="capacity_note"/></group><group><field name="status"/><field name="default_driver_id"/><field name="default_team_ids" widget="many2many_tags"/><field name="stock_location_id" readonly="1"/><field name="company_id" groups="base.group_multi_company"/></group></group><group string="Notes"><field name="notes" nolabel="1"/></group></sheet><chatter/></form></field></record>
+    <record id="action_nk_trucks" model="ir.actions.act_window"><field name="name">Vans</field><field name="res_model">nutkings.truck</field><field name="view_mode">list,form</field></record>
+</odoo>

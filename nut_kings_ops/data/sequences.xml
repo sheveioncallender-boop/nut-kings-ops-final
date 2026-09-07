@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="sequence_nutkings_trip" model="ir.sequence">
+        <field name="name">Nut Kings Distribution Trip</field>
+        <field name="code">nutkings.trip</field>
+        <field name="prefix">NK-TRIP-%(year)s-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

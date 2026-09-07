@@ -1,0 +1,1618 @@
+--- original/nut_kings_ops/README.md
++++ updated/nut_kings_ops/README.md
+@@ -1,11 +1,15 @@
+-# Nut Kings Ops 19.0.1.4.1 — Odoo 19 Community
++# Nut Kings Ops 19.0.1.4.2 — Odoo 19 Community
++
++This is a focused update of the exact uploaded v1.4.1 module. The original dashboard CSS, login CSS, branding, scanner, stock locations, and inventory workflows are retained. Read **UPGRADE_1_4_2.md** for current entrances, permissions, upgrade steps, and validation limits. The older release and validation files remain historical records.
+ 
+ Nut Kings Ops is a simplified operations workspace backed by native Odoo inventory records.
+ 
+-## Two separate entrances
++## Workspace and administration entrances
+ 
+ - **Nut Kings Workspace:** `/nutkings/login`
+ - **Odoo administration:** `/web/login`
++
++The branded login includes a workspace selector. Dedicated entrances are `/nutkings/raw-materials/receiving/login`, `/nutkings/raw-materials/issuing/login`, `/nutkings/finished-goods/receiving/login`, and `/nutkings/finished-goods/issued/login`. Administrator workspace: `/nutkings/admin/login`.
+ 
+ The module does not inherit, replace, or style Odoo's default login. Operational staff use the branded workspace login; Odoo administrators continue to use the standard backend login. The workspace login is served from module-owned HTML and does not depend on a database QWeb template.
+ 
+@@ -15,13 +19,13 @@
+ 
+ | Workspace role | Main workflow |
+ | --- | --- |
+-| Office Receiving | Receive Raw Materials into the Raw Materials warehouse |
+-| Raw Materials Employee | Issue Raw Materials from the Raw Materials warehouse |
+-| Finished Goods Entry | Enter completed products into the Finished Goods warehouse |
+-| Van Dispatcher | Manually load vans, dispatch stock, deliver, return, and reconcile |
+-| Nut Kings Manager | All Nut Kings workflows, physical counts, reports, and workspace-user administration |
++| Raw Materials — Receiving | Office: receive into Raw Materials |
++| Raw Materials — Issuing | Employee: issue from Raw Materials |
++| Finished Goods — Receiving | Employee: receive into Finished Goods |
++| Finished Goods — Issued | Office: original dispatch workflow, including its existing van requirements |
++| Administrator | Original full dashboard, counts, reports, Workspace Users, and Odoo backend |
+ 
+-Managers can open **Workspace Users** in the frontend to create, activate/deactivate, reset passwords, assign one or more operational roles, and limit dispatchers to service areas. These are real `res.users` accounts and Odoo groups, but accounts created there are external workspace users without Odoo backend access. The screen cannot grant Odoo Settings administrator rights. Nut Kings backend menus and direct custom-model access are restricted to Settings administrators.
++Only Odoo Settings administrators can open **Workspace Users** to create, activate/deactivate, reset passwords, assign operational roles, and limit dispatchers to service areas. These remain real `res.users` accounts and Odoo groups; workspace-created accounts are external users without Odoo backend access. The screen cannot grant Odoo Settings administrator rights. Existing operational-manager membership does not grant account administration or physical inventory adjustments.
+ 
+ ## Odoo remains the stock engine
+ 
+--- original/nut_kings_ops/UPGRADE_1_4_2.md
++++ updated/nut_kings_ops/UPGRADE_1_4_2.md
+@@ -0,0 +1,60 @@
++# Nut Kings Ops — original module, access update
++
++**Version:** 19.0.1.4.2 · **Target:** Odoo 19 Community · **Status:** ready for staging verification; not installed or tested on a live Odoo database here.
++
++This package updates the exact uploaded `nut_kings_ops-19.0.1.4.1(1).zip`. It keeps the same addon name, model names, XML IDs, original dashboard and login CSS, branding, screen structure, scanner, native stock locations, and offline database identity. It is not a replacement frontend or a new stock application.
++
++## This update
++
++| Workspace wording | Account assignment | Password entrance |
++| --- | --- | --- |
++| Raw Materials — Receiving | Office | `/nutkings/raw-materials/receiving/login` |
++| Raw Materials — Issuing | Employee | `/nutkings/raw-materials/issuing/login` |
++| Finished Goods — Receiving | Employee | `/nutkings/finished-goods/receiving/login` |
++| Finished Goods — Issued | Office | `/nutkings/finished-goods/issued/login` |
++| Administrator | Odoo Settings administrator | `/nutkings/admin/login` |
++
++The original branded `/nutkings/login` now has a workspace selector. Each person uses their own Odoo username and password. An administrator can assign more than one workspace to the same personal account; that account uses the same password for its assigned workspaces. An already authenticated Odoo session can enter an assigned workspace directly. Login pages still request credentials.
++
++The selected workspace shows its relevant warehouse and permitted actions. Server checks enforce the user's current role assignments. Staff cannot administer accounts, create products, set opening balances, or apply physical inventory adjustments through these workspaces. Administrators retain the original full dashboard and native Odoo product and inventory tools.
++
++Only a Settings administrator can create, edit, reset passwords, activate, or deactivate workspace accounts. The existing Workspace Users screen creates real Odoo users with external workspace access. Existing administrator and unrelated backend accounts must be managed in the Odoo backend.
++
++**Done by** appears on the transfer form, operation history, review, printout, and synchronization audit. Before validation it identifies the authenticated creator; after successful validation it identifies the authenticated person who completed that transfer. Native Odoo Created by preserves the original creator. Browser-supplied actor IDs are ignored. Completed records from the earlier release retain their existing stored attribution; this patch does not invent missing historical validator information.
++
++The Nut Kings root backend menu now opens its native dashboard action. **`/web/login`, `/web`, and `/odoo` are not overridden.** Opening Operations Workspace remains an explicit menu choice.
++
++The receipt API uses Odoo 19's `description_picking` field instead of the removed `stock.move.name` field. Failed account edits and direct transfer actions roll back within database savepoints. These changes retain the native receipt and transfer workflow.
++
++## Preserved features and staged rollout
++
++The existing receiving, issuing, native reservations, stock availability, forecast, detailed operations, returns, backorders, physical inventory, product details, reports, printing, scanner, responsive screens, offline capture, and automatic retry code remain in the module. This patch does not recreate those workflows. The two original warehouse location trees remain separate; no balances or locations are migrated or recreated by the patch.
++
++Start staging with Raw Materials — Receiving, then Raw Materials — Issuing and Finished Goods — Receiving. Test stock taking and administrator stock tools as part of the stock stage. Purchasing is not added.
++
++**Vans remain the last development and acceptance stage.** Existing van models, screens, and workflows are retained so the imported module is not stripped down. No new van functionality is implemented here. In the original module, Finished Goods — Issued is a dispatch to a selected van; that existing requirement is preserved. This access patch does not introduce a different, van-independent issue operation or finish van acceptance testing.
++
++The existing offline queue and automatic synchronization are retained. A different authenticated user cannot submit another person's saved action or take over an existing synchronization event. A queue can synchronize the current user's work from multiple assigned workspaces; every action is authorized again against current Odoo roles. Server stock remains authoritative, and rejected actions remain visible for correction.
++
++The original single-snapshot storage design is retained. Opening another entrance replaces the downloaded view when online; if the saved snapshot belongs to a different entrance, its data is not displayed. Open the intended entrance online before using it offline. New authentication and password changes require an internet connection. This release has not been certified for unattended or background synchronization while the app is closed.
++
++## Upgrade on staging
++
++1. Back up the Odoo database and filestore. Finish synchronizing existing device work before upgrading; do not reset browser storage to troubleshoot an unsynchronized queue.
++2. Extract the package. Replace the existing `nut_kings_ops` addon directory with the included folder, preserving the same addon name. This package does not require `nut_kings_access` or `nut_kings_stock`.
++3. Restart Odoo and upgrade **Nut Kings Ops** through Apps, or use your deployment's usual `-u nut_kings_ops --stop-after-init` process against the staging database. Copying Python files without upgrading the module is insufficient for the menu and field-label changes.
++4. Sign in through the standard `/web/login`. Verify the normal backend stays open, then explicitly open the Operations Workspace.
++5. Reload the workspace online to obtain v1.4.2 assets and its updated service worker. The existing IndexedDB name and version are unchanged.
++6. Using an administrator account, assign the four workspace roles and test each entrance with its assigned personal account.
++
++This ZIP is an Odoo addon, not a standalone SiteGround PHP application. Install it in the Odoo server's addons path. This update makes no hosting or deployment changes.
++
++## Verification completed and remaining
++
++Completed here: 12 focused Python tests, covering all 16 role/entrance combinations, native-authentication delegation and MFA redirect handling with doubles, bad passwords, forged entrance selection, administrator-only management, selected-workspace permissions, CSRF rejection, and offline-owner rejection. Python, JavaScript, XML, manifest, local references, screen structure, and original asset preservation are checked separately. These are source and isolated logic checks, not a live Odoo test result.
++
++Five native Odoo HTTP/database tests are included in `tests/test_workspace_upgrade.py`. They cover password entrances, staff restrictions, native backend menu routing, a real receipt completed by a second Office user, and offline owner mismatch. Run these on an Odoo 19 test database using the normal module test runner, for example with `--test-enable --test-tags /nut_kings_ops --stop-after-init` during installation or upgrade.
++
++Before daily use, verify on staging: native backend entry without a redirect loop; all four passwords and wrong-role denials; account creation/edit/password reset/deactivation; product and count restrictions; receipt/issue quantities and Done by on native records and printouts; offline disconnect/reconnect, retry without duplicate posting, shared-device ownership, and existing backorders/returns. Visual checks on phone, tablet, and desktop and end-to-end offline tests are still required. Vans follow after stock acceptance.
++
++The package includes `SOURCE_COMPARISON.json` and `CHANGES_FROM_1_4_1.patch` so the changes can be compared against the uploaded source.
+--- original/nut_kings_ops/__manifest__.py
++++ updated/nut_kings_ops/__manifest__.py
+@@ -1,7 +1,7 @@
+ {
+     'name': 'Nut Kings Ops',
+     'summary': 'Offline-first inventory and distribution operations for Nut Kings',
+-    'version': '19.0.1.4.1',
++    'version': '19.0.1.4.2',
+     'category': 'Inventory/Inventory',
+     'author': 'Spxcorp Limited',
+     'website': 'https://spxcorp.net',
+--- original/nut_kings_ops/controllers/api.py
++++ updated/nut_kings_ops/controllers/api.py
+@@ -7,22 +7,25 @@
+ from odoo.fields import Command
+ from odoo.http import request
+ from odoo.tools.float_utils import float_compare
++from ..workspace_policy import scoped_permissions
+ 
+ 
+ class NutKingsApi(http.Controller):
+-    VERSION = '1.4.1'
++    VERSION = '1.4.2'
+     MAX_BATCH = 250
+     MAX_LINES = 500
+     WORKSPACE_ROLES = {
+-        'office_receiving': ('nut_kings_ops.group_nutkings_office_receiving', 'Office Receiving'),
+-        'raw_material_issue': ('nut_kings_ops.group_nutkings_raw_material_issue', 'Raw Materials Employee'),
+-        'finished_goods_entry': ('nut_kings_ops.group_nutkings_finished_goods_entry', 'Finished Goods Entry'),
+-        'dispatcher': ('nut_kings_ops.group_nutkings_dispatcher', 'Van Dispatcher'),
++        'office_receiving': ('nut_kings_ops.group_nutkings_office_receiving', 'Raw Materials — Receiving (Office)'),
++        'raw_material_issue': ('nut_kings_ops.group_nutkings_raw_material_issue', 'Raw Materials — Issuing (Employee)'),
++        'finished_goods_entry': ('nut_kings_ops.group_nutkings_finished_goods_entry', 'Finished Goods — Receiving (Employee)'),
++        'dispatcher': ('nut_kings_ops.group_nutkings_dispatcher', 'Finished Goods — Issued (Office)'),
+         'manager': ('nut_kings_ops.group_nutkings_manager', 'Nut Kings Manager'),
+     }
+ 
+     @staticmethod
+     def _body():
++        if not request.validate_csrf(request.httprequest.headers.get('X-NutKings-CSRF')):
++            raise AccessError('Your session has changed. Sign in again before saving.')
+         return request.httprequest.get_json(silent=True) or {}
+ 
+     @staticmethod
+@@ -59,11 +62,19 @@
+ 
+     @classmethod
+     def _permissions(cls):
+-        return request.env.user.nk_ops_permissions()
++        try:
++            return scoped_permissions(
++                request.env.user.nk_ops_permissions(),
++                request.httprequest.headers.get('X-NutKings-Workspace', ''),
++            )
++        except PermissionError as error:
++            raise AccessError(str(error)) from error
+ 
+     @classmethod
+     def _require(cls, permission):
+-        request.env.user.nk_ops_assert(permission)
++        permissions = cls._permissions()
++        if not (permissions.get(permission) or permission in permissions['capabilities']):
++            raise AccessError('Your workspace does not allow this operation.')
+ 
+     @classmethod
+     def _workspace_role_groups(cls):
+@@ -92,8 +103,8 @@
+ 
+     @classmethod
+     def _workspace_user_admin_required(cls):
+-        if not cls._permissions()['manager']:
+-            raise AccessError('Only a Nut Kings manager can manage workspace users.')
++        if not request.env.user.nk_ops_permissions()['system']:
++            raise AccessError('Only an administrator can manage workspace users.')
+ 
+     @classmethod
+     def _workspace_user_error(cls, message, status=400):
+@@ -343,6 +354,7 @@
+             'version': self.VERSION,
+             'server_time': fields.Datetime.now().isoformat(),
+             'user': {'id': request.env.user.id, 'name': request.env.user.name},
++            'csrf_token': request.csrf_token(),
+         })
+ 
+     @http.route('/nutkings/api/bootstrap', type='http', auth='user', methods=['GET'], csrf=False)
+@@ -555,6 +567,7 @@
+         pending_pickings = pickings.filtered(lambda p: p.state not in ('done', 'cancel'))
+         return request.make_json_response({
+             'app_version': self.VERSION,
++            'workspace': request.httprequest.headers.get('X-NutKings-Workspace', ''),
+             'user': {
+                 'id': request.env.user.id,
+                 'name': request.env.user.name,
+@@ -689,103 +702,102 @@
+     @http.route('/nutkings/api/workspace-users/save', type='http', auth='user', methods=['POST'], csrf=False)
+     def workspace_user_save(self, **kwargs):
+         try:
+-            self._workspace_user_admin_required()
+-            data = self._body()
+-            role_groups = self._workspace_role_groups()
+-            requested_roles = set(data.get('roles') or [])
+-            if not requested_roles or not requested_roles.issubset(role_groups):
+-                raise ValidationError('Select at least one valid Nut Kings workspace role.')
+-
+-            name = str(data.get('name') or '').strip()
+-            login = str(data.get('login') or '').strip()
+-            email = str(data.get('email') or '').strip()
+-            password = str(data.get('password') or '')
+-            user_id = self._safe_int(data.get('id'))
+-            if not name or not login:
+-                raise ValidationError('Name and login are required.')
+-            if password and len(password) < 8:
+-                raise ValidationError('The password must contain at least 8 characters.')
+-            if not user_id and not password:
+-                raise ValidationError('Enter an initial password for the new workspace user.')
+-
+-            Users = request.env['res.users'].with_context(active_test=False).sudo()
+-            duplicate = Users.search([
+-                ('login', '=ilike', login),
+-                ('id', '!=', user_id or 0),
+-            ], limit=1)
+-            if duplicate:
+-                raise ValidationError('That login is already used by another Odoo account.')
+-
+-            requested_area_ids = {
+-                self._safe_int(area_id) for area_id in (data.get('service_area_ids') or [])
+-                if self._safe_int(area_id)
+-            }
+-            valid_areas = request.env['nutkings.service.area'].sudo().search([
+-                ('id', 'in', list(requested_area_ids)),
+-                ('company_id', '=', request.env.company.id),
+-                ('active', '=', True),
+-            ])
+-            if len(valid_areas) != len(requested_area_ids):
+-                raise ValidationError('One or more selected service areas are not available for this company.')
+-
+-            selected_group_ids = {role_groups[code].id for code in requested_roles}
+-            all_role_group_ids = {group.id for group in role_groups.values()}
+-            portal_group = request.env.ref('base.group_portal').sudo()
+-            internal_group = request.env.ref('base.group_user').sudo()
+-            stock_user_group = request.env.ref('stock.group_stock_user').sudo()
+-            stock_manager_group = request.env.ref('stock.group_stock_manager').sudo()
+-            active = bool(data.get('active', True))
+-            values = {
+-                'name': name,
+-                'login': login,
+-                'email': email,
+-                'active': active,
+-                'nk_service_area_ids': [Command.set(valid_areas.ids)],
+-            }
+-            if password:
+-                values['password'] = password
+-
+-            if user_id:
+-                user = Users.browse(user_id).exists()
+-                if not user or request.env.company not in user.company_ids:
+-                    raise ValidationError('The selected workspace user was not found for this company.')
+-                if user.id == SUPERUSER_ID or user.has_group('base.group_system'):
+-                    raise AccessError('Odoo administrator accounts can only be changed in the Odoo backend.')
+-                if user.id == request.env.user.id and (not active or 'manager' not in requested_roles):
+-                    raise ValidationError('You cannot deactivate your own account or remove your own manager role.')
+-                removable_group_ids = all_role_group_ids | {
+-                    portal_group.id,
+-                    internal_group.id,
+-                    stock_user_group.id,
+-                    stock_manager_group.id,
++            with request.env.cr.savepoint():
++                self._workspace_user_admin_required()
++                data = self._body()
++                role_groups = self._workspace_role_groups()
++                requested_roles = set(data.get('roles') or [])
++                if not requested_roles or not requested_roles.issubset(role_groups):
++                    raise ValidationError('Select at least one valid Nut Kings workspace role.')
++
++                name = str(data.get('name') or '').strip()
++                login = str(data.get('login') or '').strip()
++                email = str(data.get('email') or '').strip()
++                password = str(data.get('password') or '')
++                user_id = self._safe_int(data.get('id'))
++                if not name or not login:
++                    raise ValidationError('Name and login are required.')
++                if password and len(password) < 8:
++                    raise ValidationError('The password must contain at least 8 characters.')
++                if not user_id and not password:
++                    raise ValidationError('Enter an initial password for the new workspace user.')
++
++                Users = request.env['res.users'].with_context(active_test=False).sudo()
++                duplicate = Users.search([
++                    ('login', '=ilike', login),
++                    ('id', '!=', user_id or 0),
++                ], limit=1)
++                if duplicate:
++                    raise ValidationError('That login is already used by another Odoo account.')
++
++                requested_area_ids = {
++                    self._safe_int(area_id) for area_id in (data.get('service_area_ids') or [])
++                    if self._safe_int(area_id)
+                 }
+-                preserved_backend_groups = user.group_ids.filtered(
+-                    lambda group: group.id not in removable_group_ids
+-                    and internal_group in group.all_implied_ids
+-                )
+-                if preserved_backend_groups:
+-                    raise ValidationError(
+-                        'This account has other Odoo backend access groups and cannot be converted safely in the workspace. '
+-                        'Use a separate workspace account or ask an Odoo administrator to remove those backend groups first.'
++                valid_areas = request.env['nutkings.service.area'].sudo().search([
++                    ('id', 'in', list(requested_area_ids)),
++                    ('company_id', '=', request.env.company.id),
++                    ('active', '=', True),
++                ])
++                if len(valid_areas) != len(requested_area_ids):
++                    raise ValidationError('One or more selected service areas are not available for this company.')
++
++                selected_group_ids = {role_groups[code].id for code in requested_roles}
++                all_role_group_ids = {group.id for group in role_groups.values()}
++                portal_group = request.env.ref('base.group_portal').sudo()
++                internal_group = request.env.ref('base.group_user').sudo()
++                stock_user_group = request.env.ref('stock.group_stock_user').sudo()
++                stock_manager_group = request.env.ref('stock.group_stock_manager').sudo()
++                active = bool(data.get('active', True))
++                values = {
++                    'name': name,
++                    'login': login,
++                    'email': email,
++                    'active': active,
++                    'nk_service_area_ids': [Command.set(valid_areas.ids)],
++                }
++                if password:
++                    values['password'] = password
++
++                if user_id:
++                    user = Users.browse(user_id).exists()
++                    if not user or user.company_ids != request.env.company or not (set(user.group_ids.ids) & all_role_group_ids):
++                        raise ValidationError('The selected workspace user was not found for this company.')
++                    if user.id == SUPERUSER_ID or user.has_group('base.group_system'):
++                        raise AccessError('Odoo administrator accounts can only be changed in the Odoo backend.')
++                    removable_group_ids = all_role_group_ids | {
++                        portal_group.id,
++                        internal_group.id,
++                        stock_user_group.id,
++                        stock_manager_group.id,
++                    }
++                    preserved_backend_groups = user.group_ids.filtered(
++                        lambda group: group.id not in removable_group_ids
++                        and internal_group in group.all_implied_ids
+                     )
+-                values['group_ids'] = (
+-                    [Command.unlink(group_id) for group_id in all_role_group_ids]
+-                    + [Command.unlink(internal_group.id), Command.unlink(stock_user_group.id), Command.unlink(stock_manager_group.id)]
+-                    + [Command.link(group_id) for group_id in selected_group_ids | {portal_group.id}]
+-                )
+-                user.write(values)
+-            else:
+-                values.update({
+-                    'company_id': request.env.company.id,
+-                    'company_ids': [Command.set([request.env.company.id])],
+-                    'group_ids': [Command.set(list(selected_group_ids | {portal_group.id}))],
++                    if preserved_backend_groups:
++                        raise ValidationError(
++                            'This account has other Odoo backend access groups and cannot be converted safely in the workspace. '
++                            'Use a separate workspace account or ask an Odoo administrator to remove those backend groups first.'
++                        )
++                    values['group_ids'] = (
++                        [Command.unlink(group_id) for group_id in all_role_group_ids]
++                        + [Command.unlink(internal_group.id), Command.unlink(stock_user_group.id), Command.unlink(stock_manager_group.id)]
++                        + [Command.link(group_id) for group_id in selected_group_ids | {portal_group.id}]
++                    )
++                    user.write(values)
++                else:
++                    values.update({
++                        'company_id': request.env.company.id,
++                        'company_ids': [Command.set([request.env.company.id])],
++                        'group_ids': [Command.set(list(selected_group_ids | {portal_group.id}))],
++                    })
++                    user = Users.with_context(no_reset_password=True).create(values)
++
++                return request.make_json_response({
++                    'ok': True,
++                    'user': self._workspace_user_payload(user, role_groups),
+                 })
+-                user = Users.create(values)
+-
+-            return request.make_json_response({
+-                'ok': True,
+-                'user': self._workspace_user_payload(user, role_groups),
+-            })
+         except AccessError as error:
+             return self._workspace_user_error(error, status=403)
+         except (ValidationError, ValueError) as error:
+@@ -913,7 +925,7 @@
+                 raise ValueError(f'Combine duplicate lines for {product.display_name}.')
+             seen.add(identity)
+             moves.append(Command.create({
+-                'name': product.display_name,
++                'description_picking': product.display_name,
+                 'product_id': product.id,
+                 'product_uom_qty': quantity,
+                 'product_uom': product.uom_id.id,
+@@ -1212,23 +1224,24 @@
+         action = item.get('action')
+         action = {'confirm': 'mark_todo', 'process': 'validate'}.get(action, action)
+         try:
+-            self._require(picking.nk_operation_kind)
+-            if not self._picking_allowed(picking):
+-                raise ValueError('The stock transfer is outside your assigned service areas.')
+-            if item.get('force_demand'):
+-                self._require('manager')
+-            result = picking.with_context(nk_actor_user_id=request.env.user.id).nk_execute_action(
+-                action,
+-                allocations=item.get('allocations') or [],
+-                force_demand=bool(item.get('force_demand')),
+-                backorder=item.get('backorder') or 'ask',
+-            )
+-            picking.invalidate_recordset()
+-            return request.make_json_response({
+-                'operation': self._serialize_picking(picking),
+-                'requires_dialog': bool(result.get('requires_dialog')),
+-                'result': result,
+-            })
++            with request.env.cr.savepoint():
++                self._require(picking.nk_operation_kind)
++                if not self._picking_allowed(picking):
++                    raise ValueError('The stock transfer is outside your assigned service areas.')
++                if item.get('force_demand'):
++                    self._require('manager')
++                result = picking.with_context(nk_actor_user_id=request.env.user.id).nk_execute_action(
++                    action,
++                    allocations=item.get('allocations') or [],
++                    force_demand=bool(item.get('force_demand')),
++                    backorder=item.get('backorder') or 'ask',
++                )
++                picking.invalidate_recordset()
++                return request.make_json_response({
++                    'operation': self._serialize_picking(picking),
++                    'requires_dialog': bool(result.get('requires_dialog')),
++                    'result': result,
++                })
+         except Exception as exc:
+             return request.make_json_response({'error': str(exc)}, status=400)
+ 
+@@ -1244,10 +1257,17 @@
+         results = []
+         for item in transactions:
+             external_uid = str(item.get('external_uid') or uuid.uuid4())[:128]
++            owner = self._safe_int(item.get('owner_user_id'))
++            if owner and owner != request.env.uid:
++                results.append({'external_uid': external_uid, 'kind': item.get('kind'), 'status': 'error', 'error': 'This saved action belongs to another user. Sign in as its owner to synchronize.'})
++                continue
+             existing = Event.search([
+                 ('external_uid', '=', external_uid),
+                 ('company_id', '=', request.env.company.id),
+             ], limit=1)
++            if existing and existing.user_id.id != request.env.uid:
++                results.append({'external_uid': external_uid, 'kind': item.get('kind'), 'status': 'error', 'error': 'This saved action belongs to another user.'})
++                continue
+             if existing and existing.state == 'processed':
+                 results.append({'external_uid': external_uid, 'kind': existing.transaction_kind, 'status': 'processed', 'reference': existing.result_reference or '', 'picking_id': existing.picking_id.id or False, 'partner_id': existing.partner_id.id or False, 'trip_id': existing.trip_id.id or False})
+                 continue
+--- original/nut_kings_ops/controllers/workspace.py
++++ updated/nut_kings_ops/controllers/workspace.py
+@@ -1,34 +1,43 @@
+ from html import escape
+ from pathlib import Path
++import re
+ 
+ from odoo import http
+ from odoo.exceptions import AccessDenied
+ from odoo.addons.web.controllers.utils import _get_login_redirect_url, ensure_db
+ from odoo.http import request
++from ..workspace_policy import WORKSPACES, workspace_allowed
+ 
+ 
+ class NutKingsWorkspace(http.Controller):
+     MODULE_PATH = Path(__file__).resolve().parents[1]
+ 
+     @staticmethod
+-    def _landing_url(user):
++    def _landing_url(user, entry=''):
+         permissions = user.nk_ops_permissions()
+-        if permissions['manager']:
+-            return '/nutkings/#dashboard'
+-        if permissions['dispatcher']:
+-            return '/nutkings/#distribution'
+-        if permissions['finished_goods_entry']:
+-            return '/nutkings/#finished'
+-        if permissions['raw']:
+-            return '/nutkings/#raw'
+-        return '/nutkings/'
++        if entry and workspace_allowed(permissions, entry):
++            page = WORKSPACES[entry]['page'] if entry in WORKSPACES else 'dashboard'
++            return f'/nutkings/{entry}#{page}'
++        if permissions['system']:
++            return '/nutkings/admin#dashboard'
++        for candidate in WORKSPACES:
++            if workspace_allowed(permissions, candidate):
++                return NutKingsWorkspace._landing_url(user, candidate)
++        return '/nutkings/login'
++
++    @staticmethod
++    def _entry(kwargs=None):
++        path = request.httprequest.path.removeprefix('/nutkings/').removesuffix('/login')
++        if path in (*WORKSPACES, 'admin'):
++            return path
++        return str((kwargs or {}).get('workspace') or '')
+ 
+     @staticmethod
+     def _has_workspace_access():
+         return bool(request.session.uid and request.env.user.nk_ops_permissions()['has_nutkings_access'])
+ 
+     @staticmethod
+-    def _login_response(error=None, login=None, status=200):
++    def _login_response(error=None, login=None, status=200, entry=''):
+         # Keep this page independent from ir.ui.view/QWeb data.  The controller
+         # is available as soon as the addon code is loaded, while a QWeb view
+         # can be absent when a hosted deployment restarts before the database
+@@ -37,16 +46,24 @@
+         content = (
+             NutKingsWorkspace.MODULE_PATH / 'static' / 'workspace' / 'login.html'
+         ).read_text(encoding='utf-8')
+-        login_value = escape(str(login or request.session.get('auth_login') or ''), quote=True)
++        login_value = str(login or request.session.get('auth_login') or '')
+         error_block = ''
+         if error:
+             error_block = f'<div class="nk-login-alert" role="alert">{escape(str(error))}</div>'
+-        content = (
+-            content
+-            .replace('__NK_CSRF_TOKEN__', escape(str(request.csrf_token()), quote=True))
+-            .replace('__NK_LOGIN_VALUE__', login_value)
+-            .replace('__NK_ERROR_BLOCK__', error_block)
+-        )
++        options = '<option value="">Select your workspace</option>'
++        for code, definition in {**WORKSPACES, 'admin': {'label': 'Administrator', 'team': 'Administrator'}}.items():
++            selected = ' selected' if code == entry else ''
++            options += f'<option value="{escape(code, quote=True)}"{selected}>{escape(definition["label"])} · {escape(definition["team"])}</option>'
++        values = {
++            'CSRF_TOKEN': escape(str(request.csrf_token()), quote=True),
++            'LOGIN_VALUE': escape(login_value, quote=True),
++            'ERROR_BLOCK': error_block,
++            'WORKSPACE_OPTIONS': options,
++            'LOGIN_ACTION': escape(request.httprequest.path, quote=True),
++            'WORKSPACE_DISABLED': 'disabled' if request.httprequest.path != '/nutkings/login' else '',
++        }
++        # One pass: user-entered text cannot become another template token.
++        content = re.sub(r'__NK_([A-Z_]+)__', lambda match: values[match[1]], content)
+         return request.make_response(content, status=status, headers=[
+             ('Content-Type', 'text/html; charset=utf-8'),
+             ('Cache-Control', 'no-store, max-age=0'),
+@@ -58,12 +75,12 @@
+     @staticmethod
+     def _forbidden():
+         return request.make_response(
+-            'Your user does not have a Nut Kings operational role. Ask a Nut Kings manager to update the account under Workspace Users.',
++            'This account is not assigned to this workspace. Ask your administrator to update Workspace Users.',
+             status=403,
+             headers=[('Content-Type', 'text/plain; charset=utf-8')],
+         )
+ 
+-    @http.route('/nutkings/login', type='http', auth='none', methods=['GET', 'POST'], readonly=False)
++    @http.route(['/nutkings/login'] + [f'/nutkings/{entry}/login' for entry in (*WORKSPACES, 'admin')], type='http', auth='none', methods=['GET', 'POST'], readonly=False)
+     def workspace_login(self, **kwargs):
+         ensure_db()
+         if request.env.uid is None:
+@@ -72,36 +89,38 @@
+             else:
+                 request.update_env(user=request.session.uid)
+ 
+-        if request.httprequest.method == 'GET' and request.session.uid:
+-            if request.env.user.nk_ops_permissions()['has_nutkings_access']:
+-                return request.redirect(self._landing_url(request.env.user), 303)
+-            request.session.logout(keep_db=True)
+-            return self._login_response('This account is not assigned to the Nut Kings Ops Workspace.')
+-
++        entry = self._entry(kwargs)
+         login = str(kwargs.get('login') or '').strip()
+         if request.httprequest.method == 'POST':
++            if entry not in (*WORKSPACES, 'admin'):
++                return self._login_response('Select your workspace.', login, status=400)
+             password = kwargs.get('password') or ''
+             if not login or not password:
+-                return self._login_response('Enter your workspace username and password.', login)
++                return self._login_response('Enter your workspace username and password.', login, entry=entry)
+             try:
+-                auth_info = request.session.authenticate(request.env, {
++                credential = {
+                     'login': login,
+                     'password': password,
+                     'type': 'password',
+-                })
++                }
++                if request.env['res.users']._should_captcha_login(credential):
++                    return request.redirect(f'/web/login?redirect=/nutkings/{entry}', 303)
++                auth_info = request.session.authenticate(request.env, credential)
+                 user = request.env(user=auth_info['uid']).user
+-                if not user.nk_ops_permissions()['has_nutkings_access']:
++                if not workspace_allowed(user.nk_ops_permissions(), entry):
+                     request.session.logout(keep_db=True)
++                    request.env['ir.http']._auth_method_public()
+                     return self._login_response(
+-                        'Your account does not have a Nut Kings operational role. Contact your Nut Kings manager.',
++                        'This account is not assigned to this workspace. Contact your administrator.',
+                         login,
+                         status=403,
++                        entry=entry,
+                     )
+-                redirect = self._landing_url(user)
++                redirect = self._landing_url(user, entry)
+                 return request.redirect(_get_login_redirect_url(auth_info['uid'], redirect=redirect), 303)
+             except AccessDenied:
+-                return self._login_response('The username or password is incorrect.', login, status=401)
+-        return self._login_response(login=login)
++                return self._login_response('The username or password is incorrect.', login, status=401, entry=entry)
++        return self._login_response(login=login, entry=entry)
+ 
+     @http.route('/nutkings/logout', type='http', auth='none', methods=['GET'], csrf=False)
+     def workspace_logout(self, **kwargs):
+@@ -116,12 +135,18 @@
+             return self._forbidden()
+         return request.redirect('/nutkings/')
+ 
+-    @http.route(['/nutkings/', '/nutkings/offline', '/nutkings/rapid-scan'], type='http', auth='public', methods=['GET'])
++    @http.route(['/nutkings/', '/nutkings/offline', '/nutkings/rapid-scan'] + [f'/nutkings/{entry}' for entry in (*WORKSPACES, 'admin')], type='http', auth='public', methods=['GET'])
+     def workspace(self, **kwargs):
++        entry = self._entry()
+         if not request.session.uid:
+-            return request.redirect('/nutkings/login', 303)
++            login = f'/nutkings/{entry}/login' if entry in (*WORKSPACES, 'admin') else '/nutkings/login'
++            return request.redirect(login, 303)
+         if not self._has_workspace_access():
+             return self._forbidden()
++        if entry in (*WORKSPACES, 'admin') and not workspace_allowed(request.env.user.nk_ops_permissions(), entry):
++            return self._forbidden()
++        if entry not in (*WORKSPACES, 'admin') and not request.env.user.nk_ops_permissions()['system']:
++            return request.redirect(self._landing_url(request.env.user), 303)
+         content = (self.MODULE_PATH / 'static' / 'workspace' / 'index.html').read_text(encoding='utf-8')
+         return request.make_response(content, headers=[
+             ('Content-Type', 'text/html; charset=utf-8'),
+--- original/nut_kings_ops/models/operations_access.py
++++ updated/nut_kings_ops/models/operations_access.py
+@@ -74,8 +74,8 @@
+             'raw': office_receiving or raw_material_issue,
+             'finished': finished_goods_entry or dispatcher,
+             'distribution': dispatcher,
+-            'raw_count': manager,
+-            'finished_count': manager,
++            'raw_count': 'system' in roles,
++            'finished_count': 'system' in roles,
+             'contacts': dispatcher or manager,
+             'supervisor': manager,
+             'manager': manager,
+--- original/nut_kings_ops/models/picking.py
++++ updated/nut_kings_ops/models/picking.py
+@@ -4,10 +4,10 @@
+ 
+ 
+ OPERATION_KINDS = [
+-    ('raw_receipt', 'Receive Raw Materials'),
+-    ('raw_issue', 'Issue Raw Materials'),
+-    ('finished_receipt', 'Receive Finished Goods'),
+-    ('finished_to_truck', 'Dispatch Finished Goods to Van'),
++    ('raw_receipt', 'Raw Materials — Receiving'),
++    ('raw_issue', 'Raw Materials — Issuing'),
++    ('finished_receipt', 'Finished Goods — Receiving'),
++    ('finished_to_truck', 'Finished Goods — Issued'),
+     ('customer_delivery', 'Customer Delivery'),
+     ('truck_return', 'Return Van Stock'),
+     ('damage', 'Damaged / Write-Off'),
+@@ -35,14 +35,23 @@
+     nk_reference = fields.Char(string='Nut Kings Reference', copy=False, tracking=True)
+     nk_workspace_user_id = fields.Many2one(
+         'res.users',
+-        string='Workspace User',
++        string='Done by',
+         copy=False,
+         readonly=True,
+         index=True,
+-        help='Employee account that created this transfer through the Nut Kings workspace.',
++        help='Authenticated workspace creator until validation; the authenticated person who completes the transfer after validation. Native Created by remains available separately.',
+     )
+ 
+     _nk_sync_uid_unique = models.Constraint('unique(nk_sync_uid)', 'This offline transfer has already been synchronized.')
++
++    def _action_done(self):
++        # sudo() retains the authenticated uid in Odoo. Never take attribution
++        # from a browser payload or from a caller-supplied context actor id.
++        pending = self.filtered(lambda p: p.nk_is_operation and p.state != 'done')
++        actor_id = self.env.uid
++        result = super()._action_done()
++        pending.filtered(lambda p: p.state == 'done').write({'nk_workspace_user_id': actor_id})
++        return result
+ 
+     def nk_state_label(self):
+         self.ensure_one()
+@@ -234,7 +243,7 @@
+             return_action = wizard.action_create_returns_all()
+             return_picking = self.env['stock.picking'].sudo().browse(return_action.get('res_id')).exists()
+             if return_picking:
+-                actor_user_id = self.env.context.get('nk_actor_user_id') or self.env.user.id
++                actor_user_id = self.env.uid
+                 return_picking.write({
+                     'nk_is_operation': True,
+                     'nk_operation_kind': 'truck_return' if self.nk_truck_id else self.nk_operation_kind,
+--- original/nut_kings_ops/models/sync_event.py
++++ updated/nut_kings_ops/models/sync_event.py
+@@ -16,7 +16,7 @@
+     created_on_device = fields.Datetime()
+     received_at = fields.Datetime(default=fields.Datetime.now, required=True, index=True)
+     processed_at = fields.Datetime()
+-    user_id = fields.Many2one('res.users', default=lambda self: self.env.user, required=True, index=True)
++    user_id = fields.Many2one('res.users', string='Done by', default=lambda self: self.env.user, required=True, index=True)
+     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, required=True, index=True)
+     payload = fields.Text()
+     error_message = fields.Text()
+--- original/nut_kings_ops/reports/transfer_report.xml
++++ updated/nut_kings_ops/reports/transfer_report.xml
+@@ -30,7 +30,7 @@
+                                 <tr><td><strong>Source</strong></td><td><span t-field="o.location_id"/></td><td><strong>Destination</strong></td><td><span t-field="o.location_dest_id"/></td></tr>
+                                 <tr><td><strong>Customer / Supplier</strong></td><td><span t-field="o.partner_id"/></td><td><strong>Scheduled Date</strong></td><td><span t-field="o.scheduled_date"/></td></tr>
+                                 <tr><td><strong>Van</strong></td><td><span t-field="o.nk_truck_id"/></td><td><strong>Trip</strong></td><td><span t-field="o.nk_trip_id"/></td></tr>
+-                                <tr><td><strong>Workspace User</strong></td><td><span t-field="o.nk_workspace_user_id"/></td><td><strong>Device</strong></td><td><span t-field="o.nk_device_name"/></td></tr>
++                                <tr><td><strong>Done by</strong></td><td><span t-field="o.nk_workspace_user_id"/></td><td><strong>Device</strong></td><td><span t-field="o.nk_device_name"/></td></tr>
+                                 <tr><td><strong>Reference</strong></td><td colspan="3"><span t-field="o.nk_reference"/></td></tr>
+                             </tbody>
+                         </table>
+--- original/nut_kings_ops/security/roles.xml
++++ updated/nut_kings_ops/security/roles.xml
+@@ -16,22 +16,22 @@
+     </record>
+ 
+     <record id="privilege_nutkings_office_receiving" model="res.groups.privilege">
+-        <field name="name">Office Receiving</field>
++        <field name="name">Raw Materials — Receiving</field>
+         <field name="category_id" ref="module_category_nutkings_operational_roles"/>
+         <field name="sequence">10</field>
+     </record>
+     <record id="privilege_nutkings_raw_material_issue" model="res.groups.privilege">
+-        <field name="name">Raw Materials Issue</field>
++        <field name="name">Raw Materials — Issuing</field>
+         <field name="category_id" ref="module_category_nutkings_operational_roles"/>
+         <field name="sequence">20</field>
+     </record>
+     <record id="privilege_nutkings_finished_goods_entry" model="res.groups.privilege">
+-        <field name="name">Finished Goods Entry</field>
++        <field name="name">Finished Goods — Receiving</field>
+         <field name="category_id" ref="module_category_nutkings_operational_roles"/>
+         <field name="sequence">30</field>
+     </record>
+     <record id="privilege_nutkings_dispatcher" model="res.groups.privilege">
+-        <field name="name">Van Dispatch</field>
++        <field name="name">Finished Goods — Issued</field>
+         <field name="category_id" ref="module_category_nutkings_operational_roles"/>
+         <field name="sequence">40</field>
+     </record>
+@@ -42,33 +42,33 @@
+     </record>
+ 
+     <record id="group_nutkings_office_receiving" model="res.groups">
+-        <field name="name">Office Receiving</field>
++        <field name="name">Raw Materials — Receiving</field>
+         <field name="privilege_id" ref="privilege_nutkings_office_receiving"/>
+         <field name="sequence">10</field>
+         <field name="comment">Receives Raw Materials into the Raw Materials warehouse.</field>
+     </record>
+     <record id="group_nutkings_raw_material_issue" model="res.groups">
+-        <field name="name">Raw Materials Employee</field>
++        <field name="name">Raw Materials — Issuing</field>
+         <field name="privilege_id" ref="privilege_nutkings_raw_material_issue"/>
+         <field name="sequence">10</field>
+         <field name="comment">Issues Raw Materials from the Raw Materials warehouse.</field>
+     </record>
+     <record id="group_nutkings_finished_goods_entry" model="res.groups">
+-        <field name="name">Finished Goods Entry</field>
++        <field name="name">Finished Goods — Receiving</field>
+         <field name="privilege_id" ref="privilege_nutkings_finished_goods_entry"/>
+         <field name="sequence">10</field>
+         <field name="comment">Records completed products entering the Finished Goods warehouse.</field>
+     </record>
+     <record id="group_nutkings_dispatcher" model="res.groups">
+-        <field name="name">Dispatcher</field>
++        <field name="name">Finished Goods — Issued</field>
+         <field name="privilege_id" ref="privilege_nutkings_dispatcher"/>
+         <field name="sequence">10</field>
+         <field name="comment">Dispatches Finished Goods and loads, delivers and reconciles separate vans.</field>
+     </record>
+     <record id="group_nutkings_manager" model="res.groups">
+-        <field name="name">Manager / Administrator</field>
++        <field name="name">Operations Manager</field>
+         <field name="privilege_id" ref="privilege_nutkings_manager"/>
+         <field name="sequence">10</field>
+-        <field name="comment">Full Nut Kings frontend, workspace-user administration, correction and reporting access.</field>
++        <field name="comment">Nut Kings operational supervision and reporting. Workspace accounts and physical inventory adjustments require an Odoo administrator.</field>
+     </record>
+ </odoo>
+--- original/nut_kings_ops/static/workspace/app-v1.4.1.js
++++ updated/nut_kings_ops/static/workspace/app-v1.4.1.js
+@@ -1,6 +1,10 @@
+ 'use strict';
+ 
+-const APP_VERSION = '1.4.1';
++const APP_VERSION = '1.4.2';
++const WORKSPACE_ENTRY = window.location.pathname.replace(/^\/nutkings\//, '').replace(/\/$/, '');
++const SELECTED_WORKSPACE = ['raw-materials/receiving', 'raw-materials/issuing', 'finished-goods/receiving', 'finished-goods/issued', 'admin'].includes(WORKSPACE_ENTRY) ? WORKSPACE_ENTRY : '';
++const WORKSPACE_LOGIN = SELECTED_WORKSPACE ? `/nutkings/${SELECTED_WORKSPACE}/login` : '/nutkings/login';
++let sessionCsrfToken = '';
+ const DB_NAME = 'nut-kings-ops-offline-clean';
+ const DB_VERSION = 1;
+ const DEVICE_KEY = 'nut-kings-ops-device-id-v1';
+@@ -14,10 +18,10 @@
+ };
+ 
+ const OP_LABELS = {
+-  raw_receipt: 'Receive Raw Materials',
+-  raw_issue: 'Issue Raw Materials',
+-  finished_receipt: 'Receive Finished Goods',
+-  finished_to_truck: 'Dispatch Finished Goods to Van',
++  raw_receipt: 'Raw Materials — Receiving',
++  raw_issue: 'Raw Materials — Issuing',
++  finished_receipt: 'Finished Goods — Receiving',
++  finished_to_truck: 'Finished Goods — Issued',
+   customer_delivery: 'Customer Delivery',
+   truck_return: 'Return Van Stock',
+ };
+@@ -32,10 +36,10 @@
+ };
+ 
+ const WORKSPACE_ROLE_LABELS = {
+-  office_receiving: 'Office Receiving',
+-  raw_material_issue: 'Raw Materials Employee',
+-  finished_goods_entry: 'Finished Goods Entry',
+-  dispatcher: 'Van Dispatcher',
++  office_receiving: 'Raw Materials — Receiving',
++  raw_material_issue: 'Raw Materials — Issuing',
++  finished_goods_entry: 'Finished Goods — Receiving',
++  dispatcher: 'Finished Goods — Issued',
+   manager: 'Nut Kings Manager',
+   system: 'Odoo Administrator',
+ };
+@@ -300,6 +304,11 @@
+ 
+ function operationProductType(operationType) { return OP_CONFIG[operationType]?.productType || 'finished_good'; }
+ function allowedOperationTypes() { return Object.keys(OP_LABELS).filter((key) => state.snapshot.capabilities.includes(key)); }
++
++function localOperationVisible(item) {
++  const operation = item.operation_type || (state.snapshot.recent_operations || []).find((op) => op.id === (item.operation_id || item.picking_id))?.operation_type;
++  return Boolean(operation && state.snapshot.capabilities.includes(operation));
++}
+ 
+ function desiredOperationState(operation) {
+   if (operation?.desired_state) return operation.desired_state;
+@@ -1034,7 +1043,11 @@
+   const controller = new AbortController();
+   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+   try {
+-    const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...options, signal: controller.signal });
++    // An owned queue may contain earlier work from another assigned entrance.
++    // Sync authorizes each item against the user's current Odoo roles.
++    const headers = { ...options.headers, 'X-NutKings-Workspace': url === '/nutkings/api/sync' ? '' : SELECTED_WORKSPACE };
++    if (sessionCsrfToken) headers['X-NutKings-CSRF'] = sessionCsrfToken;
++    const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...options, headers, signal: controller.signal });
+     const contentType = response.headers.get('content-type') || '';
+     if (!contentType.includes('application/json')) {
+       const error = new Error(response.redirected || response.url.includes('/web/login') || response.url.includes('/nutkings/login') ? 'Your workspace session has expired. Sign in again while online.' : 'The server returned an unexpected response.');
+@@ -1062,10 +1075,12 @@
+   try {
+     const data = await fetchJSON('/nutkings/api/ping', {}, 7000);
+     state.sessionUser = data.user || null;
++    sessionCsrfToken = data.csrf_token || '';
+     state.serverOnline = true;
++    await enforceLocalOwner();
+   } catch (error) {
+     if (error.code === 'SESSION') {
+-      window.location.replace('/nutkings/login');
++      window.location.replace(WORKSPACE_LOGIN);
+       return false;
+     }
+     state.serverOnline = false;
+@@ -1086,7 +1101,7 @@
+     return true;
+   } catch (error) {
+     if (error.code === 'SESSION') {
+-      window.location.replace('/nutkings/login');
++      window.location.replace(WORKSPACE_LOGIN);
+       return false;
+     }
+     state.serverOnline = false;
+@@ -1159,6 +1174,7 @@
+       if (force) toast('The Nut Kings server is not reachable. Your work remains safe on this device.', 'error');
+       return;
+     }
++    if (state.ownerConflict) return;
+     const pending = state.queue.filter((item) => item.sync_state !== 'processed');
+     if (!pending.length) {
+       await refreshSnapshot(force);
+@@ -1307,7 +1323,7 @@
+     contacts: Boolean(permissions.contacts),
+     reports: Boolean(permissions.supervisor),
+     sync: true,
+-    settings: Boolean(permissions.manager),
++    settings: Boolean(permissions.system) && (!SELECTED_WORKSPACE || SELECTED_WORKSPACE === 'admin'),
+     dashboard: true,
+   };
+   all('.nk-nav-button').forEach((button) => {
+@@ -1318,6 +1334,7 @@
+   });
+   if (routeAccess[state.route] === false) navigate('dashboard');
+   $('new-trip').hidden = !permissions.distribution;
++  $('dashboard-trips').closest('.nk-card').hidden = !permissions.distribution;
+   $('open-native-count').hidden = !(state.serverOnline && permissions.system);
+ }
+ 
+@@ -1328,17 +1345,17 @@
+   const finishedTotal = Object.values(balances.finished).reduce((sum, value) => sum + number(value), 0);
+   const truckTotal = Object.values(balances.trucks).reduce((outer, truck) => outer + Object.values(truck).reduce((sum, value) => sum + number(value), 0), 0);
+   $('dashboard-kpis').innerHTML = [
+-    renderKpi('Raw Material Quantity', formatNumber(rawTotal), `${snapshot.products.filter((p) => p.type === 'raw_material').length} products`),
+-    renderKpi('Finished Goods Quantity', formatNumber(finishedTotal), `${snapshot.products.filter((p) => p.type === 'finished_good').length} products`),
+-    renderKpi('Stock on Vans', formatNumber(truckTotal), `${snapshot.trucks.length} active vans`),
++    snapshot.permissions?.raw && renderKpi('Raw Material Quantity', formatNumber(rawTotal), `${snapshot.products.filter((p) => p.type === 'raw_material').length} products`),
++    snapshot.permissions?.finished && renderKpi('Finished Goods Quantity', formatNumber(finishedTotal), `${snapshot.products.filter((p) => p.type === 'finished_good').length} products`),
++    snapshot.permissions?.distribution && renderKpi('Stock on Vans', formatNumber(truckTotal), `${snapshot.trucks.length} active vans`),
+     renderKpi('Low Stock Items', snapshot.reports?.low_stock?.length || 0, 'Requires management attention'),
+-    renderKpi('Open Trips', localOpenTrips().length, 'Server and device-created trips'),
++    snapshot.permissions?.distribution && renderKpi('Open Trips', localOpenTrips().length, 'Server and device-created trips'),
+     renderKpi('Pending Operations', (snapshot.dashboard?.pending_operation_count || 0) + state.queue.filter((q) => q.kind === 'stock_operation').length, 'Draft or waiting to synchronize'),
+     renderKpi('Device Queue', state.queue.length, state.queue.some((q) => q.sync_state === 'error') ? 'Some actions need review' : 'Safely stored locally'),
+     renderKpi('Last Sync', snapshot.saved_at ? formatDateTime(snapshot.saved_at) : 'Never', state.serverOnline ? 'Server reachable' : 'Working offline'),
+-  ].join('');
+-
+-  const localOperations = state.queue.filter((item) => ['stock_operation', 'create_transfer'].includes(item.kind)).slice(-5).reverse().map((item) => ({
++  ].filter(Boolean).join('');
++
++  const localOperations = state.queue.filter(localOperationVisible).filter((item) => ['stock_operation', 'create_transfer'].includes(item.kind)).slice(-5).reverse().map((item) => ({
+     name: item.reference || item.external_uid.slice(-8), operation_label: OP_LABELS[item.operation_type], date: item.created_on_device, quantity: (item.lines || []).reduce((sum, line) => sum + number(line.quantity), 0), state: item.sync_state === 'error' ? 'error' : 'pending', local: true,
+   }));
+   const operations = [...localOperations, ...(snapshot.recent_operations || []).slice(0, 5)].slice(0, 7);
+@@ -1459,7 +1476,7 @@
+ }
+ 
+ function localOperationRows() {
+-  return state.queue.filter((item) => ['stock_operation', 'create_transfer', 'operation_event', 'picking_action'].includes(item.kind)).map((item) => {
++  return state.queue.filter(localOperationVisible).filter((item) => ['stock_operation', 'create_transfer', 'operation_event', 'picking_action'].includes(item.kind)).map((item) => {
+     const workflowState = ['stock_operation', 'create_transfer'].includes(item.kind)
+       ? desiredOperationState(item)
+       : item.action === 'validate' ? 'done' : item.action === 'mark_todo' ? 'waiting' : item.action === 'cancel' ? 'cancelled' : 'draft';
+@@ -1773,7 +1790,7 @@
+     const product = productById(line.product_id);
+     return `<tr><td>${html(line.product || product?.name || '')}</td><td>${html(line.barcode || product?.barcode || '—')}</td><td class="num">${formatNumber(line.quantity)}</td><td>${html(line.uom || product?.uom || '')}</td><td>${html(line.lot_reference || '—')}</td><td>${html(line.expiration_date || '—')}</td></tr>`;
+   }).join('');
+-  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${html(operationDocumentName(operation))}</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#17120f;margin:0;font-size:12px}.head{border-top:8px solid #ef1b23;padding-top:12px;display:flex;justify-content:space-between;align-items:center}.head img{max-width:170px;max-height:78px}.watermark{margin:14px 0;padding:10px;border:2px solid #ef1b23;background:#fff4f4;color:#b20d14;text-align:center;font-weight:700}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:16px 0}.meta div{border-bottom:1px solid #ddd;padding:5px 0}.meta span{display:block;color:#6b625d;font-size:10px;text-transform:uppercase}.meta strong{display:block;margin-top:3px}table{width:100%;border-collapse:collapse;margin-top:14px}th{background:#ffc928;text-align:left}th,td{border:1px solid #cfc7c0;padding:7px}.num{text-align:right}.notes{margin-top:14px;border:1px solid #ddd;padding:10px}.sig{display:flex;gap:40px;margin-top:55px}.sig div{width:50%;border-top:1px solid #17120f;padding-top:6px}.foot{margin-top:18px;color:#6b625d;font-size:10px}@media print{button{display:none}}</style></head><body><div class="head"><div><h1 style="margin:0">Nut Kings Stock Operation</h1><p style="margin:4px 0">Sesame Foods Limited</p><h2 style="margin:8px 0 0">${html(operation.name || operation.reference || 'Device Draft')}</h2></div>${logo ? `<img src="${logo}" alt="The Nut Kings">` : ''}</div>${provisional ? `<div class="watermark">${html(watermark)}</div>` : ''}<div class="meta"><div><span>Operation</span><strong>${html(operation.operation_label || OP_LABELS[operation.operation_type] || '')}</strong></div><div><span>Status</span><strong>${html(operationStateLabel(workflowState))}</strong></div><div><span>Date</span><strong>${html(formatDateTime(operation.date || operation.created_on_device))}</strong></div><div><span>User</span><strong>${html(operation.user || state.snapshot.user?.name || '')}</strong></div><div><span>Supplier / Customer</span><strong>${html(party)}</strong></div><div><span>Van / Trip</span><strong>${html(`${truck}${trip !== 'Not applicable' ? ` · ${trip}` : ''}`)}</strong></div><div><span>Movement Reason</span><strong>${html(reason)}</strong></div><div><span>Reference</span><strong>${html(operation.reference || 'Not set')}</strong></div></div><table><thead><tr><th>Product</th><th>Barcode</th><th class="num">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th></tr></thead><tbody>${rows}</tbody></table>${operation.notes ? `<div class="notes"><strong>Notes:</strong><br>${html(operation.notes)}</div>` : ''}<div class="sig"><div>Prepared / Processed By</div><div>Authorized Signature</div></div><div class="foot">Printed from Nut Kings Ops ${provisional ? 'using the device copy. This document is not the authoritative server record until synchronization succeeds.' : ''}</div><script>window.onload=()=>{window.print()}<\/script></body></html>`);
++  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${html(operationDocumentName(operation))}</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#17120f;margin:0;font-size:12px}.head{border-top:8px solid #ef1b23;padding-top:12px;display:flex;justify-content:space-between;align-items:center}.head img{max-width:170px;max-height:78px}.watermark{margin:14px 0;padding:10px;border:2px solid #ef1b23;background:#fff4f4;color:#b20d14;text-align:center;font-weight:700}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:16px 0}.meta div{border-bottom:1px solid #ddd;padding:5px 0}.meta span{display:block;color:#6b625d;font-size:10px;text-transform:uppercase}.meta strong{display:block;margin-top:3px}table{width:100%;border-collapse:collapse;margin-top:14px}th{background:#ffc928;text-align:left}th,td{border:1px solid #cfc7c0;padding:7px}.num{text-align:right}.notes{margin-top:14px;border:1px solid #ddd;padding:10px}.sig{display:flex;gap:40px;margin-top:55px}.sig div{width:50%;border-top:1px solid #17120f;padding-top:6px}.foot{margin-top:18px;color:#6b625d;font-size:10px}@media print{button{display:none}}</style></head><body><div class="head"><div><h1 style="margin:0">Nut Kings Stock Operation</h1><p style="margin:4px 0">Sesame Foods Limited</p><h2 style="margin:8px 0 0">${html(operation.name || operation.reference || 'Device Draft')}</h2></div>${logo ? `<img src="${logo}" alt="The Nut Kings">` : ''}</div>${provisional ? `<div class="watermark">${html(watermark)}</div>` : ''}<div class="meta"><div><span>Operation</span><strong>${html(operation.operation_label || OP_LABELS[operation.operation_type] || '')}</strong></div><div><span>Status</span><strong>${html(operationStateLabel(workflowState))}</strong></div><div><span>Date</span><strong>${html(formatDateTime(operation.date || operation.created_on_device))}</strong></div><div><span>Done by</span><strong>${html(operation.user || state.snapshot.user?.name || '')}</strong></div><div><span>Supplier / Customer</span><strong>${html(party)}</strong></div><div><span>Van / Trip</span><strong>${html(`${truck}${trip !== 'Not applicable' ? ` · ${trip}` : ''}`)}</strong></div><div><span>Movement Reason</span><strong>${html(reason)}</strong></div><div><span>Reference</span><strong>${html(operation.reference || 'Not set')}</strong></div></div><table><thead><tr><th>Product</th><th>Barcode</th><th class="num">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th></tr></thead><tbody>${rows}</tbody></table>${operation.notes ? `<div class="notes"><strong>Notes:</strong><br>${html(operation.notes)}</div>` : ''}<div class="sig"><div>Prepared / Processed By</div><div>Authorized Signature</div></div><div class="foot">Printed from Nut Kings Ops ${provisional ? 'using the device copy. This document is not the authoritative server record until synchronization succeeds.' : ''}</div><script>window.onload=()=>{window.print()}<\/script></body></html>`);
+   printWindow.document.close();
+ }
+ 
+@@ -1800,7 +1817,7 @@
+   const trip = operation.trip_external_uid ? localOpenTrips().find((item) => item.local_uid === operation.trip_external_uid)?.name : tripById(operation.trip_id)?.name;
+   const workflowState = operation.workflow_state || desiredOperationState(operation);
+   $('review-title').textContent = operation.name ? `${operation.name} · ${operation.operation_label || OP_LABELS[operation.operation_type]}` : `Review ${OP_LABELS[operation.operation_type] || 'Operation'}`;
+-  $('review-content').innerHTML = `${statusFlowHtml(workflowState)}<div class="nk-review-meta"><div><span>Operation</span><strong>${html(operation.operation_label || OP_LABELS[operation.operation_type] || operation.operation_type)}</strong></div><div><span>Status</span><strong>${html(operationStateLabel(workflowState))}${operation.local ? ' · Device' : ''}</strong></div><div><span>Date</span><strong>${formatDateTime(operation.date || operation.created_on_device)}</strong></div><div><span>Customer / Supplier</span><strong>${html(operation.partner || party)}</strong></div><div><span>Van / Trip</span><strong>${html([operation.truck || truck, operation.trip || trip].filter((value) => value && value !== 'Not applicable').join(' · ') || 'Not applicable')}</strong></div><div><span>Reference</span><strong>${html(operation.reference || 'Not set')}</strong></div></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th class="number">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th></tr></thead><tbody>${lines.map((line) => { const product = productById(line.product_id); return `<tr><td><button type="button" class="nk-product-link" data-product-id="${line.product_id}"><strong>${html(line.product || product?.name || '')}</strong></button></td><td>${html(line.barcode || product?.barcode || '—')}</td><td class="number">${formatNumber(line.quantity)}</td><td>${html(line.uom || product?.uom || '')}</td><td>${html(line.lot_reference || '—')}</td><td>${html(line.expiration_date || '—')}</td></tr>`; }).join('')}</tbody></table></div>${operation.reason || operation.reason_id ? `<div class="nk-card" style="margin-top:14px"><strong>Movement Reason:</strong> ${html(operation.reason || reasonById(operation.reason_id)?.name || '')}</div>` : ''}${operation.notes ? `<div class="nk-card" style="margin-top:14px"><strong>Notes</strong><div class="nk-small nk-muted" style="margin-top:7px">${html(operation.notes)}</div></div>` : ''}${operation.local ? `<div class="nk-warning-note" style="margin-top:14px">This is a device operation. ${workflowState === 'done' ? 'It is completed locally and will become official after successful synchronization.' : 'Its workflow state will be created in Odoo when synchronization succeeds.'}</div>` : ''}${operation.sync_error ? `<div class="nk-warning-note" style="margin-top:14px">${html(operation.sync_error)}</div>` : ''}`;
++  $('review-content').innerHTML = `${statusFlowHtml(workflowState)}<div class="nk-review-meta"><div><span>Operation</span><strong>${html(operation.operation_label || OP_LABELS[operation.operation_type] || operation.operation_type)}</strong></div><div><span>Status</span><strong>${html(operationStateLabel(workflowState))}${operation.local ? ' · Device' : ''}</strong></div><div><span>Date</span><strong>${formatDateTime(operation.date || operation.created_on_device)}</strong></div><div><span>Customer / Supplier</span><strong>${html(operation.partner || party)}</strong></div><div><span>Van / Trip</span><strong>${html([operation.truck || truck, operation.trip || trip].filter((value) => value && value !== 'Not applicable').join(' · ') || 'Not applicable')}</strong></div><div><span>Done by</span><strong>${html(operation.user || state.snapshot.user?.name || '')}</strong></div><div><span>Reference</span><strong>${html(operation.reference || 'Not set')}</strong></div></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th class="number">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th></tr></thead><tbody>${lines.map((line) => { const product = productById(line.product_id); return `<tr><td><button type="button" class="nk-product-link" data-product-id="${line.product_id}"><strong>${html(line.product || product?.name || '')}</strong></button></td><td>${html(line.barcode || product?.barcode || '—')}</td><td class="number">${formatNumber(line.quantity)}</td><td>${html(line.uom || product?.uom || '')}</td><td>${html(line.lot_reference || '—')}</td><td>${html(line.expiration_date || '—')}</td></tr>`; }).join('')}</tbody></table></div>${operation.reason || operation.reason_id ? `<div class="nk-card" style="margin-top:14px"><strong>Movement Reason:</strong> ${html(operation.reason || reasonById(operation.reason_id)?.name || '')}</div>` : ''}${operation.notes ? `<div class="nk-card" style="margin-top:14px"><strong>Notes</strong><div class="nk-small nk-muted" style="margin-top:7px">${html(operation.notes)}</div></div>` : ''}${operation.local ? `<div class="nk-warning-note" style="margin-top:14px">This is a device operation. ${workflowState === 'done' ? 'It is completed locally and will become official after successful synchronization.' : 'Its workflow state will be created in Odoo when synchronization succeeds.'}</div>` : ''}${operation.sync_error ? `<div class="nk-warning-note" style="margin-top:14px">${html(operation.sync_error)}</div>` : ''}`;
+   const reviewActions = $('review-actions');
+   if (!reviewActions) throw new Error('Review action controls are unavailable. Reload the Nut Kings workspace.');
+   if (editableActions) {
+@@ -2190,7 +2207,7 @@
+ }
+ 
+ async function loadWorkspaceUsers(showMessage = true) {
+-  if (!state.snapshot.permissions?.manager) return;
++  if (!state.snapshot.permissions?.system) return;
+   if (!state.serverOnline) {
+     if (showMessage) toast('Connect to Odoo before managing workspace users.', 'error');
+     renderWorkspaceUsers();
+@@ -2203,7 +2220,7 @@
+     if (showMessage) toast('Workspace users refreshed.', 'success');
+   } catch (error) {
+     if (error.code === 'SESSION') {
+-      window.location.replace('/nutkings/login');
++      window.location.replace(WORKSPACE_LOGIN);
+       return;
+     }
+     $('workspace-users-status').textContent = error.message;
+@@ -2224,7 +2241,7 @@
+   $('workspace-user-password-confirm').value = '';
+   $('workspace-user-password-label').textContent = user ? 'New Password (optional)' : 'Initial Password';
+   $('workspace-user-active').checked = user?.active !== false;
+-  $('workspace-user-roles').innerHTML = state.workspaceUsers.roles.map((role) => `<label class="nk-choice"><input type="checkbox" name="workspace-role" value="${html(role.code)}" ${(user?.roles || []).includes(role.code) ? 'checked' : ''}><span><strong>${html(role.label)}</strong><small>${html({ office_receiving: 'Receive raw materials', raw_material_issue: 'Issue raw materials', finished_goods_entry: 'Enter finished products', dispatcher: 'Load and operate vans', manager: 'All Nut Kings operations and workspace users' }[role.code] || '')}</small></span></label>`).join('');
++  $('workspace-user-roles').innerHTML = state.workspaceUsers.roles.map((role) => `<label class="nk-choice"><input type="checkbox" name="workspace-role" value="${html(role.code)}" ${(user?.roles || []).includes(role.code) ? 'checked' : ''}><span><strong>${html(role.label)}</strong><small>${html({ office_receiving: 'Raw Materials — Receiving (Office)', raw_material_issue: 'Raw Materials — Issuing (Employee)', finished_goods_entry: 'Finished Goods — Receiving (Employee)', dispatcher: 'Finished Goods — Issued (Office)', manager: 'Operational supervisor; accounts and inventory adjustments require an administrator' }[role.code] || '')}</small></span></label>`).join('');
+   $('workspace-user-areas').innerHTML = state.workspaceUsers.service_areas.length
+     ? state.workspaceUsers.service_areas.map((area) => `<label class="nk-choice compact"><input type="checkbox" name="workspace-area" value="${area.id}" ${(user?.service_area_ids || []).includes(area.id) ? 'checked' : ''}><span><strong>${html(area.name)}</strong><small>${html(area.code)}</small></span></label>`).join('')
+     : '<div class="nk-small nk-muted">No service areas have been configured yet.</div>';
+@@ -2275,7 +2292,7 @@
+     await loadWorkspaceUsers(false);
+     toast(payload.id ? 'Workspace user updated.' : 'Workspace user created.', 'success');
+   } catch (error) {
+-    if (error.code === 'SESSION') window.location.replace('/nutkings/login');
++    if (error.code === 'SESSION') window.location.replace(WORKSPACE_LOGIN);
+     else toast(error.message, 'error');
+   } finally {
+     $('workspace-user-save').disabled = false;
+@@ -2637,9 +2654,12 @@
+   bindEvents();
+   renderOperationTypeFilter();
+   await loadLocalState();
++  // A saved snapshot from another entrance must not expose its operations.
++  // Leave all stored work intact; reconnect to download this entrance's view.
++  if ((state.snapshot.workspace || '') !== SELECTED_WORKSPACE) state.snapshot = emptySnapshot();
+   if ('serviceWorker' in navigator) {
+     try {
+-      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.1', { scope: '/nutkings/' });
++      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.2', { scope: '/nutkings/' });
+       registration.update().catch(() => {});
+     } catch (error) {
+       console.warn('Nut Kings service worker registration failed', error);
+--- original/nut_kings_ops/static/workspace/index.html
++++ updated/nut_kings_ops/static/workspace/index.html
+@@ -65,10 +65,10 @@
+         <div class="nk-section">
+           <div class="nk-section-head"><div><h2>Quick Operations</h2><p>Open the rapid scan screen for the most common warehouse actions.</p></div></div>
+           <div class="nk-grid nk-grid-4">
+-            <button class="nk-quick" data-scan="raw_receipt"><span class="nk-quick-icon">⬇</span><strong>Receive Raw Materials</strong><span>Scan supplier stock into the raw-material warehouse.</span></button>
+-            <button class="nk-quick" data-scan="raw_issue"><span class="nk-quick-icon">⬆</span><strong>Issue Raw Materials</strong><span>Scan materials out of the raw-material warehouse.</span></button>
+-            <button class="nk-quick" data-scan="finished_receipt"><span class="nk-quick-icon">▦</span><strong>Receive Finished Goods</strong><span>Add finished products independently into available stock.</span></button>
+-            <button class="nk-quick" data-scan="finished_to_truck"><span class="nk-quick-icon">↗</span><strong>Dispatch Finished Goods to Van</strong><span>Create an Odoo internal transfer to the selected van.</span></button>
++            <button class="nk-quick" data-scan="raw_receipt"><span class="nk-quick-icon">⬇</span><strong>Raw Materials — Receiving</strong><span>Scan supplier stock into the raw-material warehouse.</span></button>
++            <button class="nk-quick" data-scan="raw_issue"><span class="nk-quick-icon">⬆</span><strong>Raw Materials — Issuing</strong><span>Scan materials out of the raw-material warehouse.</span></button>
++            <button class="nk-quick" data-scan="finished_receipt"><span class="nk-quick-icon">▦</span><strong>Finished Goods — Receiving</strong><span>Add finished products independently into available stock.</span></button>
++            <button class="nk-quick" data-scan="finished_to_truck"><span class="nk-quick-icon">↗</span><strong>Finished Goods — Issued</strong><span>Create an Odoo internal transfer to the selected van.</span></button>
+             <button class="nk-quick" data-count="raw"><span class="nk-quick-icon">✓</span><strong>Raw Physical Inventory</strong><span>Count the Raw Materials warehouse using the normal Odoo inventory method.</span></button>
+             <button class="nk-quick" data-count="finished"><span class="nk-quick-icon">☑</span><strong>Finished Physical Inventory</strong><span>Count the Finished Goods warehouse and apply differences.</span></button>
+             <button class="nk-quick" data-route-target="distribution"><span class="nk-quick-icon">▰</span><strong>Distribution Trips</strong><span>Load vans, deliver to customers, return stock, and reconcile.</span></button>
+@@ -82,13 +82,13 @@
+       </section>
+ 
+       <section class="nk-page" id="page-raw">
+-        <div class="nk-section-head"><div><h2>Raw Materials Warehouse</h2><p>Current synchronized stock, adjusted by this device’s pending transactions.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="raw_receipt">Rapid Receive</button><button class="nk-button secondary" data-scan="raw_issue">Rapid Issue</button><button class="nk-button dark" data-count="raw">Physical Inventory</button></div></div>
++        <div class="nk-section-head"><div><h2>Raw Materials Warehouse</h2><p>Current synchronized stock, adjusted by this device’s pending transactions.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="raw_receipt">Receiving</button><button class="nk-button secondary" data-scan="raw_issue">Issuing</button><button class="nk-button dark" data-count="raw">Physical Inventory</button></div></div>
+         <div class="nk-grid nk-grid-3" id="raw-kpis"></div>
+         <div class="nk-card nk-section"><div class="nk-toolbar"><input class="nk-input nk-search" id="raw-search" placeholder="Search raw material, barcode, or reference"><select class="nk-select" id="raw-filter" style="max-width:220px"><option value="all">All stock</option><option value="low">Low stock</option><option value="positive">Positive quantity</option><option value="zero">Zero quantity</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Raw Material</th><th>Barcode</th><th>Pack / UOM</th><th class="number">On Hand</th><th class="number">Available</th><th class="number">Minimum</th><th>Status</th></tr></thead><tbody id="raw-stock-body"></tbody></table></div></div>
+       </section>
+ 
+       <section class="nk-page" id="page-finished">
+-        <div class="nk-section-head"><div><h2>Finished Goods Warehouse</h2><p>Available saleable stock and the projected balance on this device.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="finished_receipt">Rapid Receive</button><button class="nk-button secondary" data-scan="finished_to_truck">Dispatch to Van</button><button class="nk-button dark" data-count="finished">Physical Inventory</button></div></div>
++        <div class="nk-section-head"><div><h2>Finished Goods Warehouse</h2><p>Available saleable stock and the projected balance on this device.</p></div><div class="nk-actions"><button class="nk-button primary" data-scan="finished_receipt">Receiving</button><button class="nk-button secondary" data-scan="finished_to_truck">Issued</button><button class="nk-button dark" data-count="finished">Physical Inventory</button></div></div>
+         <div class="nk-grid nk-grid-3" id="finished-kpis"></div>
+         <div class="nk-card nk-section"><div class="nk-toolbar"><input class="nk-input nk-search" id="finished-search" placeholder="Search finished product, barcode, or reference"><select class="nk-select" id="finished-filter" style="max-width:220px"><option value="all">All stock</option><option value="low">Low stock</option><option value="positive">Positive quantity</option><option value="zero">Zero quantity</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Finished Product</th><th>Barcode</th><th>Pack / UOM</th><th class="number">On Hand</th><th class="number">Available</th><th class="number">Minimum</th><th>Status</th></tr></thead><tbody id="finished-stock-body"></tbody></table></div></div>
+       </section>
+@@ -125,7 +125,7 @@
+ 
+       <section class="nk-page" id="page-operations">
+         <div class="nk-section-head"><div><h2>Stock Operations</h2><p>Create, confirm, complete, cancel, print, and audit stock operations from this workspace.</p></div><button class="nk-button primary" id="new-operation">+ Rapid Scan</button></div>
+-        <div class="nk-card"><div class="nk-toolbar"><input class="nk-input nk-search" id="operation-search" placeholder="Search operation, product, customer, van, or reference"><select class="nk-select" id="operation-filter" style="max-width:220px"><option value="all">All statuses</option><option value="draft">Draft</option><option value="waiting">Waiting</option><option value="ready">Ready</option><option value="done">Done</option><option value="cancel">Cancelled</option><option value="pending">Waiting to sync</option><option value="error">Sync error</option></select><select class="nk-select" id="operation-type-filter" style="max-width:240px"><option value="all">All operation types</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Reference</th><th>Date</th><th>Operation</th><th>Party / Van</th><th class="number">Quantity</th><th>User</th><th>Status</th><th></th></tr></thead><tbody id="operations-body"></tbody></table></div></div>
++        <div class="nk-card"><div class="nk-toolbar"><input class="nk-input nk-search" id="operation-search" placeholder="Search operation, product, customer, van, or reference"><select class="nk-select" id="operation-filter" style="max-width:220px"><option value="all">All statuses</option><option value="draft">Draft</option><option value="waiting">Waiting</option><option value="ready">Ready</option><option value="done">Done</option><option value="cancel">Cancelled</option><option value="pending">Waiting to sync</option><option value="error">Sync error</option></select><select class="nk-select" id="operation-type-filter" style="max-width:240px"><option value="all">All operation types</option></select></div><div class="nk-table-wrap"><table class="nk-table"><thead><tr><th>Reference</th><th>Date</th><th>Operation</th><th>Party / Van</th><th class="number">Quantity</th><th>Done by</th><th>Status</th><th></th></tr></thead><tbody id="operations-body"></tbody></table></div></div>
+       </section>
+ 
+       <section class="nk-page" id="page-contacts">
+@@ -301,6 +301,6 @@
+ </div>
+ 
+ <div class="nk-toast-area" id="toast-area"></div>
+-<script src="/nut_kings_ops/static/workspace/app-v1.4.1.js" defer></script>
++<script src="/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.2" defer></script>
+ </body>
+ </html>
+--- original/nut_kings_ops/static/workspace/login.html
++++ updated/nut_kings_ops/static/workspace/login.html
+@@ -8,6 +8,7 @@
+   <title>Nut Kings Ops Workspace</title>
+   <link rel="icon" href="/nut_kings_ops/static/description/icon.png">
+   <link rel="stylesheet" href="/nut_kings_ops/static/workspace/workspace-login-v1.4.1.css">
++  <link rel="stylesheet" href="/nut_kings_ops/static/workspace/workspace-access.css">
+   <script src="/nut_kings_ops/static/workspace/workspace-login-v1.4.1.js" defer></script>
+ </head>
+ <body class="nk-workspace-login-page">
+@@ -20,13 +21,13 @@
+       <div class="nk-login-copy">
+         <span class="nk-login-eyebrow">Operations Workspace</span>
+         <h1 id="nk-login-heading">The right tools for every warehouse role.</h1>
+-        <p>Sign in once and the workspace will show only the operations assigned to you.</p>
++        <p>Select your workspace and sign in with your personal username and password.</p>
+       </div>
+       <div class="nk-role-grid" aria-label="Nut Kings workspace roles">
+-        <article><span>↓</span><div><strong>Office Receiving</strong><small>Receive raw materials</small></div></article>
+-        <article><span>↑</span><div><strong>Raw Materials</strong><small>Issue materials to production</small></div></article>
+-        <article><span>+</span><div><strong>Finished Goods</strong><small>Enter completed products</small></div></article>
+-        <article><span>→</span><div><strong>Van Dispatch</strong><small>Load, deliver, return &amp; reconcile</small></div></article>
++        <article><span>↓</span><div><strong>Raw Materials — Receiving</strong><small>Office</small></div></article>
++        <article><span>↑</span><div><strong>Raw Materials — Issuing</strong><small>Employee</small></div></article>
++        <article><span>+</span><div><strong>Finished Goods — Receiving</strong><small>Employee</small></div></article>
++        <article><span>→</span><div><strong>Finished Goods — Issued</strong><small>Office</small></div></article>
+       </div>
+       <div class="nk-login-engine"><span></span>Powered by Odoo inventory and stock movements</div>
+     </section>
+@@ -42,8 +43,12 @@
+           </div>
+         </div>
+         __NK_ERROR_BLOCK__
+-        <form action="/nutkings/login" method="post" class="nk-workspace-login-form">
++        <form action="__NK_LOGIN_ACTION__" method="post" class="nk-workspace-login-form">
+           <input type="hidden" name="csrf_token" value="__NK_CSRF_TOKEN__">
++          <div class="nk-login-field">
++            <label for="nk-workspace">Workspace</label>
++            <select id="nk-workspace" name="workspace" required __NK_WORKSPACE_DISABLED__>__NK_WORKSPACE_OPTIONS__</select>
++          </div>
+           <div class="nk-login-field">
+             <label for="nk-login">Email or username</label>
+             <input id="nk-login" name="login" type="text" value="__NK_LOGIN_VALUE__" placeholder="Enter your workspace login" autocomplete="username" autocapitalize="off" required autofocus>
+@@ -59,9 +64,9 @@
+         </form>
+         <div class="nk-login-help">
+           <strong>Need access or forgot your password?</strong>
+-          <span>Contact your Nut Kings manager for workspace access or a password reset.</span>
++          <span>Contact your Nut Kings administrator for workspace access or a password reset.</span>
+         </div>
+-        <p class="nk-login-admin-note">Odoo backend access remains separate and is reserved for administrators.</p>
++        <p class="nk-login-admin-note"><a href="/web/login">Administrator: Odoo backend login</a></p>
+       </div>
+       <p class="nk-login-footer">Nut Kings Ops · Authorized personnel only</p>
+     </section>
+--- original/nut_kings_ops/static/workspace/sw.js
++++ updated/nut_kings_ops/static/workspace/sw.js
+@@ -1,9 +1,10 @@
+ 'use strict';
+-const CACHE = 'nut-kings-ops-v1.4.1';
++const CACHE = 'nut-kings-ops-v1.4.2';
++const WORKSPACE_PATHS = ['/nutkings/', '/nutkings/admin', '/nutkings/raw-materials/receiving', '/nutkings/raw-materials/issuing', '/nutkings/finished-goods/receiving', '/nutkings/finished-goods/issued'];
+ const SHELL = [
+-  '/nutkings/',
++  '/nut_kings_ops/static/workspace/index.html?v=1.4.2',
+   '/nut_kings_ops/static/workspace/app-v1.4.1.css',
+-  '/nut_kings_ops/static/workspace/app-v1.4.1.js',
++  '/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.2',
+   '/nut_kings_ops/static/img/nut_kings_logo.png',
+   '/nut_kings_ops/static/description/icon-192.png',
+   '/nut_kings_ops/static/description/icon-512.png',
+@@ -21,11 +22,11 @@
+   const url = new URL(request.url);
+   if (url.origin !== self.location.origin) return;
+   if (url.pathname.startsWith('/nutkings/api/') || url.pathname.startsWith('/web/')) return;
+-  if (url.pathname === '/nutkings/') {
++  if (WORKSPACE_PATHS.includes(url.pathname)) {
+     event.respondWith(fetch(request).then((response) => {
+       if (response.ok && !response.redirected) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
+       return response;
+-    }).catch(() => caches.match('/nutkings/')));
++    }).catch(async () => (await caches.match(request)) || (await caches.match('/nut_kings_ops/static/workspace/index.html?v=1.4.2')) || new Response('Open this workspace while online before using it offline.', { status: 503, headers: { 'Content-Type': 'text/plain' } })));
+     return;
+   }
+   if (url.pathname.startsWith('/nut_kings_ops/static/')) {
+--- original/nut_kings_ops/static/workspace/workspace-access.css
++++ updated/nut_kings_ops/static/workspace/workspace-access.css
+@@ -0,0 +1,3 @@
++/* The new selector uses the existing login input styling. Original CSS is unchanged. */
++.nk-login-field select { width: 100%; height: 54px; padding: 0 15px; border: 1px solid var(--nk-line); border-radius: 12px; color: var(--nk-ink); background: #fff; outline: none; font: inherit; transition: border-color .16s ease, box-shadow .16s ease; }
++.nk-login-field select:focus { border-color: #d7a900; box-shadow: 0 0 0 4px rgba(255,203,37,.24); }
+--- original/nut_kings_ops/tests/__init__.py
++++ updated/nut_kings_ops/tests/__init__.py
+@@ -0,0 +1 @@
++from . import test_workspace_upgrade
+--- original/nut_kings_ops/tests/test_workspace_upgrade.py
++++ updated/nut_kings_ops/tests/test_workspace_upgrade.py
+@@ -0,0 +1,132 @@
++"""Native Odoo 19 tests. Requires Odoo/PostgreSQL; no browser automation."""
++import json
++import uuid
++
++from lxml import html
++from odoo import Command
++from odoo.tests import HttpCase, tagged
++
++from ..workspace_policy import WORKSPACES
++
++
++@tagged('post_install', '-at_install')
++class TestWorkspaceUpgrade(HttpCase):
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.password = 'NkStageTest123!'
++        cls.accounts = {}
++        for entry, definition in WORKSPACES.items():
++            cls.accounts[entry] = cls.env['res.users'].with_context(no_reset_password=True).create({
++                'name': definition['label'], 'login': 'nk.patch.' + definition['role'],
++                'password': cls.password,
++                'company_id': cls.env.company.id,
++                'company_ids': [Command.set(cls.env.company.ids)],
++                'group_ids': [Command.set([
++                    cls.env.ref('base.group_portal').id,
++                    cls.env.ref('nut_kings_ops.group_nutkings_' + definition['role']).id,
++                ])],
++            })
++        cls.second_office = cls.accounts['raw-materials/receiving'].copy({
++            'name': 'Second Office', 'login': 'nk.patch.second.office', 'password': cls.password,
++        })
++        cls.product = cls.env['product.product'].create({
++            'name': 'Nut Kings access test raw product', 'type': 'consu', 'is_storable': True,
++            'nk_enabled': True, 'nk_inventory_type': 'raw_material',
++        })
++        cls.supplier = cls.env['res.partner'].create({'name': 'Nut Kings access test supplier'})
++
++    def setUp(self):
++        super().setUp()
++        self.authenticate(None, None)
++
++    def login(self, entry, user=None, password=None):
++        self.authenticate(None, None)
++        url = '/nutkings/' + entry + '/login'
++        page = self.url_open(url)
++        token = html.fromstring(page.text).xpath('//input[@name="csrf_token"]/@value')[0]
++        return self.url_open(url, data={
++            'csrf_token': token, 'login': (user or self.accounts[entry]).login,
++            'password': password or self.password,
++        }, allow_redirects=False)
++
++    def post(self, path, payload, entry='raw-materials/receiving'):
++        ping = self.url_open('/nutkings/api/ping').json()
++        return self.url_open(path, data=json.dumps(payload), headers={
++            'Content-Type': 'application/json', 'X-NutKings-CSRF': ping['csrf_token'],
++            'X-NutKings-Workspace': entry,
++        })
++
++    def test_four_password_entrances_and_wrong_workspace(self):
++        for entry in WORKSPACES:
++            response = self.login(entry)
++            self.assertEqual(response.status_code, 303)
++            self.assertIn('/nutkings/' + entry, response.headers['Location'])
++            self.assertEqual(self.url_open('/nutkings/' + entry).status_code, 200)
++        response = self.login('raw-materials/receiving', user=self.accounts['raw-materials/issuing'])
++        self.assertEqual(response.status_code, 403)
++
++    def test_bad_password_and_staff_backend_denial(self):
++        self.assertEqual(self.login('raw-materials/receiving', password='wrong').status_code, 401)
++        self.login('raw-materials/receiving')
++        self.assertEqual(self.url_open('/nutkings/backend').status_code, 403)
++        self.assertEqual(self.url_open('/nutkings/api/workspace-users').status_code, 403)
++        user = self.accounts['raw-materials/receiving']
++        self.assertFalse(user.has_group('base.group_user'))
++        self.assertFalse(user.has_group('stock.group_stock_user'))
++
++    def test_backend_root_is_a_native_action(self):
++        root = self.env.ref('nut_kings_ops.menu_nk_root')
++        self.assertEqual(root.action, self.env.ref('nut_kings_ops.action_nk_open_backend_dashboard'))
++        self.assertEqual(root.action._name, 'ir.actions.server')
++        menus = self.env['ir.ui.menu'].with_user(self.env.ref('base.user_admin')).load_web_menus(False)
++        self.assertEqual(menus[root.id]['actionModel'], 'ir.actions.server')
++        self.assertEqual(self.env.ref('nut_kings_ops.menu_nk_workspace').action._name, 'ir.actions.act_url')
++        response = self.url_open('/web/login', allow_redirects=False)
++        self.assertEqual(response.status_code, 200)
++        self.assertNotIn('nk-workspace-login-page', response.text)
++
++    def test_native_receipt_and_actual_validator_attribution(self):
++        office = self.accounts['raw-materials/receiving']
++        self.login('raw-materials/receiving')
++        item = {
++            'external_uid': str(uuid.uuid4()), 'kind': 'create_transfer',
++            'owner_user_id': office.id, 'operation_type': 'raw_receipt',
++            'partner_id': self.supplier.id,
++            'lines': [{'product_id': self.product.id, 'quantity': 2}],
++            'nk_workspace_user_id': self.env.ref('base.user_admin').id,
++        }
++        response = self.post('/nutkings/api/sync', {'transactions': [item]})
++        self.assertEqual(response.status_code, 200, response.text)
++        result = response.json()['results'][0]
++        self.assertEqual(result['status'], 'processed', result)
++        picking = self.env['stock.picking'].browse(result['picking_id'])
++        self.assertEqual(picking.state, 'draft')
++        self.assertEqual(picking.nk_workspace_user_id, office)
++        self.assertEqual(picking.create_uid, office)
++
++        self.login('raw-materials/receiving', user=self.second_office)
++        action = {
++            'external_uid': str(uuid.uuid4()), 'kind': 'picking_action',
++            'owner_user_id': self.second_office.id, 'picking_id': picking.id,
++            'action': 'validate', 'backorder': 'create',
++            'nk_actor_user_id': self.env.ref('base.user_admin').id,
++        }
++        result = self.post('/nutkings/api/sync', {'transactions': [action]}).json()['results'][0]
++        self.assertEqual(result['status'], 'processed', result)
++        self.env.invalidate_all()
++        self.assertEqual(picking.state, 'done')
++        self.assertEqual(picking.nk_workspace_user_id, self.second_office)
++        self.assertEqual(picking.create_uid, office)
++        self.assertEqual(sum(picking.move_ids.mapped('quantity')), 2)
++        self.assertTrue(picking.move_ids.mapped('move_line_ids'))
++
++    def test_offline_owner_mismatch_creates_no_transfer(self):
++        self.login('raw-materials/receiving')
++        uid = str(uuid.uuid4())
++        response = self.post('/nutkings/api/sync', {'transactions': [{
++            'external_uid': uid, 'kind': 'create_transfer',
++            'owner_user_id': self.accounts['raw-materials/issuing'].id,
++        }]})
++        self.assertEqual(response.json()['results'][0]['status'], 'error')
++        self.assertFalse(self.env['nutkings.sync.event'].search([('external_uid', '=', uid)]))
+--- original/nut_kings_ops/tools/test_access_patch.py
++++ updated/nut_kings_ops/tools/test_access_patch.py
+@@ -0,0 +1,198 @@
++"""Focused tests with doubles; these do not replace the Odoo database tests."""
++import importlib.util
++import sys
++import types
++import unittest
++from datetime import datetime
++from pathlib import Path
++from unittest.mock import Mock
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def module(name, **values):
++    obj = types.ModuleType(name)
++    obj.__dict__.update(values)
++    sys.modules[name] = obj
++    return obj
++
++
++class AccessError(Exception):
++    pass
++
++
++class RequestProxy:
++    current = None
++
++    def __getattr__(self, name):
++        return getattr(self.current, name)
++
++
++request = RequestProxy()
++fields = types.SimpleNamespace(**{key: lambda *a, **kw: None for key in ('Many2many', 'Many2one', 'Boolean', 'Char', 'Date', 'Selection')})
++fields.Datetime = types.SimpleNamespace(now=datetime.now)
++module('odoo', SUPERUSER_ID=1, _=lambda text: text, fields=fields,
++       models=types.SimpleNamespace(Model=object, Constraint=lambda *a: None),
++       http=types.SimpleNamespace(Controller=object, route=lambda *a, **kw: lambda fn: fn))
++module('odoo.fields', Command=types.SimpleNamespace())
++module('odoo.exceptions', AccessDenied=AccessError, AccessError=AccessError, ValidationError=ValueError, UserError=ValueError)
++module('odoo.http', request=request)
++module('odoo.tools.float_utils', float_compare=lambda a, b, **kw: (a > b) - (a < b))
++for name in ('odoo.addons', 'odoo.addons.web', 'odoo.addons.web.controllers', 'test_nk', 'test_nk.models', 'test_nk.controllers'):
++    module(name, __path__=[])
++module('odoo.addons.web.controllers.utils', ensure_db=lambda: None,
++       _get_login_redirect_url=lambda uid, redirect: '/mfa?redirect=' + redirect)
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, ROOT / path)
++    obj = importlib.util.module_from_spec(spec)
++    sys.modules[name] = obj
++    spec.loader.exec_module(obj)
++    return obj
++
++
++policy = load('test_nk.workspace_policy', 'workspace_policy.py')
++users = load('test_nk.models.operations_access', 'models/operations_access.py')
++workspace = load('test_nk.controllers.workspace', 'controllers/workspace.py')
++api = load('test_nk.controllers.api', 'controllers/api.py')
++
++
++class User:
++    id = 99
++    name = 'Office tester'
++
++    def __init__(self, roles=(), admin=False):
++        self.groups = {users.ROLE_GROUPS[role] for role in roles}
++        if admin:
++            self.groups.add('base.group_system')
++
++    def ensure_one(self):
++        pass
++
++    def has_group(self, name):
++        return name in self.groups
++
++    nk_ops_role_codes = users.ResUsers.nk_ops_role_codes
++    nk_ops_permissions = users.ResUsers.nk_ops_permissions
++
++
++class Env:
++    def __init__(self, user):
++        self.user, self.uid = user, user.id
++        self.company = types.SimpleNamespace(id=3)
++        self.model = Mock()
++        self.model._should_captcha_login.return_value = False
++        self.cr = Mock()
++
++    def __call__(self, **kw):
++        return self
++
++    def __getitem__(self, name):
++        return self.model
++
++
++class Request:
++    def __init__(self, path, user, method='GET', uid=None, headers=None):
++        self.httprequest = types.SimpleNamespace(path=path, method=method, headers=headers or {})
++        self.env = Env(user)
++        self.session = Mock(uid=uid)
++        self.session.authenticate.return_value = {'uid': user.id}
++        self.session.get.return_value = ''
++
++    def csrf_token(self):
++        return 'test-csrf'
++
++    def validate_csrf(self, token):
++        return token == self.csrf_token()
++
++    def make_response(self, content, status=200, headers=()):
++        return types.SimpleNamespace(content=content, status=status, headers=dict(headers))
++
++    make_json_response = make_response
++
++    def redirect(self, location, status=303):
++        return types.SimpleNamespace(location=location, status=status)
++
++
++class AccessPatchTests(unittest.TestCase):
++    def use(self, path, roles=(), admin=False, **kw):
++        request.current = Request(path, User(roles, admin), **kw)
++        return request.current
++
++    def test_all_sixteen_role_entrance_pairs(self):
++        for entry, definition in policy.WORKSPACES.items():
++            for assigned in policy.WORKSPACES.values():
++                with self.subTest(entry=entry, role=assigned['role']):
++                    self.use('/nutkings/' + entry, [assigned['role']], uid=99)
++                    response = workspace.NutKingsWorkspace().workspace()
++                    self.assertEqual(response.status, 200 if definition['role'] == assigned['role'] else 403)
++
++    def test_each_anonymous_entrance_keeps_its_login(self):
++        for entry in policy.WORKSPACES:
++            self.use('/nutkings/' + entry)
++            self.assertEqual(workspace.NutKingsWorkspace().workspace().location, '/nutkings/' + entry + '/login')
++
++    def test_fixed_login_cannot_be_overridden_by_body(self):
++        req = self.use('/nutkings/raw-materials/receiving/login', ['raw_material_issue'], method='POST')
++        response = workspace.NutKingsWorkspace().workspace_login(login='worker', password='password', workspace='raw-materials/issuing')
++        self.assertEqual(response.status, 403)
++        req.session.logout.assert_called_once()
++
++    def test_password_and_mfa_use_native_authentication(self):
++        for entry, definition in policy.WORKSPACES.items():
++            req = self.use('/nutkings/' + entry + '/login', [definition['role']], method='POST')
++            response = workspace.NutKingsWorkspace().workspace_login(login='worker', password='password')
++            self.assertEqual(req.session.authenticate.call_args.args[1]['type'], 'password')
++            self.assertEqual(response.location, '/mfa?redirect=/nutkings/' + entry + '#' + definition['page'])
++
++    def test_wrong_password_is_rejected(self):
++        req = self.use('/nutkings/raw-materials/receiving/login', ['office_receiving'], method='POST')
++        req.session.authenticate.side_effect = AccessError()
++        self.assertEqual(workspace.NutKingsWorkspace().workspace_login(login='worker', password='bad').status, 401)
++
++    def test_login_input_is_escaped_and_not_substituted_twice(self):
++        self.use('/nutkings/login')
++        response = workspace.NutKingsWorkspace._login_response(login='\"><script>__NK_CSRF_TOKEN__</script>')
++        self.assertIn('&lt;script&gt;__NK_CSRF_TOKEN__&lt;/script&gt;', response.content)
++        self.assertNotIn('<script>test-csrf', response.content)
++
++    def test_multi_role_selection_is_scoped(self):
++        perms = User(['office_receiving', 'raw_material_issue']).nk_ops_permissions()
++        self.assertEqual(policy.scoped_permissions(perms, 'raw-materials/receiving')['capabilities'], ['raw_receipt'])
++        with self.assertRaises(PermissionError):
++            policy.scoped_permissions(perms, 'finished-goods/receiving')
++
++    def test_api_enforces_selection_before_native_mutation(self):
++        self.use('/nutkings/api/sync', ['office_receiving', 'raw_material_issue'], headers={'X-NutKings-Workspace': 'raw-materials/receiving'})
++        api.NutKingsApi._require('raw_receipt')
++        with self.assertRaises(AccessError):
++            api.NutKingsApi._require('raw_issue')
++
++    def test_only_system_administrator_manages_accounts(self):
++        for role in users.ROLE_GROUPS:
++            self.use('/nutkings/api/workspace-users', [role])
++            with self.assertRaises(AccessError):
++                api.NutKingsApi._workspace_user_admin_required()
++        self.use('/nutkings/api/workspace-users', admin=True)
++        api.NutKingsApi._workspace_user_admin_required()
++
++    def test_only_administrator_can_apply_counts(self):
++        self.assertFalse(User(['manager']).nk_ops_permissions()['raw_count'])
++        self.assertTrue(User(admin=True).nk_ops_permissions()['raw_count'])
++
++    def test_post_requires_current_session_csrf(self):
++        self.use('/nutkings/api/sync')
++        with self.assertRaises(AccessError):
++            api.NutKingsApi._body()
++
++    def test_another_users_offline_action_never_reaches_event_search(self):
++        req = self.use('/nutkings/api/sync', ['office_receiving'], headers={'X-NutKings-CSRF': 'test-csrf'})
++        req.httprequest.get_json = lambda **kw: {'transactions': [{'external_uid': 'saved', 'kind': 'create_transfer', 'owner_user_id': 101}]}
++        response = api.NutKingsApi().sync()
++        self.assertEqual(response.content['results'][0]['status'], 'error')
++        req.env.model.sudo.return_value.search.assert_not_called()
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)
+--- original/nut_kings_ops/views/menus.xml
++++ updated/nut_kings_ops/views/menus.xml
+@@ -10,21 +10,21 @@
+         <field name="url">/nutkings/#rapid</field>
+         <field name="target">self</field>
+     </record>
+-    <menuitem id="menu_nk_root" name="Nut Kings Ops" action="action_nk_workspace" sequence="1" web_icon="nut_kings_ops,static/description/icon.png" groups="base.group_system"/>
++    <menuitem id="menu_nk_root" name="Nut Kings Ops" action="action_nk_open_backend_dashboard" sequence="1" web_icon="nut_kings_ops,static/description/icon.png" groups="base.group_system"/>
+     <menuitem id="menu_nk_workspace" name="Operations Workspace" parent="menu_nk_root" action="action_nk_workspace" sequence="1" groups="base.group_system"/>
+     <menuitem id="menu_nk_rapid_scan" name="Rapid Scan" parent="menu_nk_root" action="action_nk_rapid_scan" sequence="2" groups="base.group_system"/>
+     <menuitem id="menu_nk_backend_dashboard" name="Backend" parent="menu_nk_root" action="action_nk_open_backend_dashboard" sequence="3" groups="base.group_system"/>
+ 
+     <menuitem id="menu_nk_raw_root" name="Raw Materials" parent="menu_nk_root" sequence="10" groups="base.group_system"/>
+     <menuitem id="menu_nk_raw_products" name="Raw Material Products" parent="menu_nk_raw_root" action="action_nk_raw_products" sequence="10" groups="base.group_system"/>
+-    <menuitem id="menu_nk_raw_operations" name="Raw Materials Receipts" parent="menu_nk_raw_root" action="action_nk_raw_receipts" sequence="20" groups="base.group_system"/>
+-    <menuitem id="menu_nk_raw_issues" name="Raw Materials Issues" parent="menu_nk_raw_root" action="action_nk_raw_issues" sequence="21" groups="base.group_system"/>
++    <menuitem id="menu_nk_raw_operations" name="Raw Materials — Receiving" parent="menu_nk_raw_root" action="action_nk_raw_receipts" sequence="20" groups="base.group_system"/>
++    <menuitem id="menu_nk_raw_issues" name="Raw Materials — Issuing" parent="menu_nk_raw_root" action="action_nk_raw_issues" sequence="21" groups="base.group_system"/>
+     <menuitem id="menu_nk_raw_inventory" name="Physical Inventory" parent="menu_nk_raw_root" action="action_nk_raw_physical_inventory" sequence="30" groups="base.group_system"/>
+     <menuitem id="menu_nk_suppliers" name="Suppliers" parent="menu_nk_raw_root" action="action_nk_suppliers" sequence="40" groups="base.group_system"/>
+ 
+     <menuitem id="menu_nk_finished_root" name="Finished Goods" parent="menu_nk_root" sequence="20" groups="base.group_system"/>
+     <menuitem id="menu_nk_finished_products" name="Finished Products" parent="menu_nk_finished_root" action="action_nk_finished_products" sequence="10" groups="base.group_system"/>
+-    <menuitem id="menu_nk_finished_operations" name="Finished Goods Receipts" parent="menu_nk_finished_root" action="action_nk_finished_receipts" sequence="20" groups="base.group_system"/>
++    <menuitem id="menu_nk_finished_operations" name="Finished Goods — Receiving" parent="menu_nk_finished_root" action="action_nk_finished_receipts" sequence="20" groups="base.group_system"/>
+     <menuitem id="menu_nk_finished_inventory" name="Physical Inventory" parent="menu_nk_finished_root" action="action_nk_finished_physical_inventory" sequence="30" groups="base.group_system"/>
+ 
+     <menuitem id="menu_nk_distribution_root" name="Distribution" parent="menu_nk_root" sequence="30" groups="base.group_system"/>
+--- original/nut_kings_ops/views/picking_views.xml
++++ updated/nut_kings_ops/views/picking_views.xml
+@@ -82,7 +82,7 @@
+     </record>
+ 
+     <record id="action_nk_raw_receipts" model="ir.actions.act_window">
+-        <field name="name">Raw Materials Receipts</field>
++        <field name="name">Raw Materials — Receiving</field>
+         <field name="res_model">stock.picking</field>
+         <field name="view_mode">list,form,calendar</field>
+         <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'raw_receipt')]</field>
+@@ -90,7 +90,7 @@
+     </record>
+ 
+     <record id="action_nk_raw_issues" model="ir.actions.act_window">
+-        <field name="name">Raw Materials Issues</field>
++        <field name="name">Raw Materials — Issuing</field>
+         <field name="res_model">stock.picking</field>
+         <field name="view_mode">list,form,calendar</field>
+         <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'raw_issue')]</field>
+@@ -106,7 +106,7 @@
+     </record>
+ 
+     <record id="action_nk_finished_receipts" model="ir.actions.act_window">
+-        <field name="name">Finished Goods Receipts</field>
++        <field name="name">Finished Goods — Receiving</field>
+         <field name="res_model">stock.picking</field>
+         <field name="view_mode">list,form,calendar</field>
+         <field name="domain">[('nk_is_operation', '=', True), ('nk_operation_kind', '=', 'finished_receipt')]</field>
+--- original/nut_kings_ops/views/sync_views.xml
++++ updated/nut_kings_ops/views/sync_views.xml
+@@ -15,7 +15,7 @@
+                 <separator/>
+                 <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                 <filter string="Device" name="group_device" context="{'group_by': 'device_name'}"/>
+-                <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
++                <filter string="Done by" name="group_user" context="{'group_by': 'user_id'}"/>
+             </search>
+         </field>
+     </record>
+--- original/nut_kings_ops/workspace_policy.py
++++ updated/nut_kings_ops/workspace_policy.py
+@@ -0,0 +1,51 @@
++"""Workspace selection only; stock operation codes and workflows stay unchanged."""
++
++WORKSPACES = {
++    'raw-materials/receiving': {
++        'label': 'Raw Materials — Receiving', 'team': 'Office',
++        'role': 'office_receiving', 'page': 'raw', 'operations': ('raw_receipt',),
++    },
++    'raw-materials/issuing': {
++        'label': 'Raw Materials — Issuing', 'team': 'Employee',
++        'role': 'raw_material_issue', 'page': 'raw', 'operations': ('raw_issue',),
++    },
++    'finished-goods/receiving': {
++        'label': 'Finished Goods — Receiving', 'team': 'Employee',
++        'role': 'finished_goods_entry', 'page': 'finished', 'operations': ('finished_receipt',),
++    },
++    'finished-goods/issued': {
++        'label': 'Finished Goods — Issued', 'team': 'Office',
++        'role': 'dispatcher', 'page': 'finished',
++        'operations': ('finished_to_truck', 'customer_delivery', 'truck_return'),
++    },
++}
++
++
++def workspace_allowed(permissions, entry):
++    if entry == 'admin':
++        return bool(permissions.get('system'))
++    definition = WORKSPACES.get(entry)
++    return bool(definition and permissions.get(definition['role']))
++
++
++def scoped_permissions(permissions, entry):
++    if not entry:
++        return dict(permissions)
++    if not workspace_allowed(permissions, entry):
++        raise PermissionError('This account is not assigned to the selected workspace.')
++    if entry == 'admin':
++        return dict(permissions)
++    definition = WORKSPACES[entry]
++    capabilities = [op for op in definition['operations'] if op in permissions['capabilities']]
++    result = {key: False for key, value in permissions.items() if isinstance(value, bool)}
++    result.update({
++        definition['role']: True,
++        definition['page']: True,
++        'system': bool(permissions.get('system')),
++        'capabilities': capabilities,
++        'has_nutkings_access': bool(capabilities),
++        # Retain the original dispatch workflow; van development is deferred.
++        'distribution': definition['role'] == 'dispatcher',
++        'contacts': definition['role'] == 'dispatcher',
++    })
++    return result
