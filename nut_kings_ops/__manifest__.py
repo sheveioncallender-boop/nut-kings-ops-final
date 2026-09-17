@@ -1,7 +1,7 @@
 {
     'name': 'Nut Kings Ops',
     'summary': 'Offline-first inventory and distribution operations for Nut Kings',
-    'version': '19.0.1.4.6',
+    'version': '19.0.1.4.7',
     'category': 'Inventory/Inventory',
     'author': 'Spxcorp Limited',
     'website': 'https://spxcorp.net',

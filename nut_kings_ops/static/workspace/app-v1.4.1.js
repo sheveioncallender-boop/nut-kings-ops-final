@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '1.4.6';
+const APP_VERSION = '1.4.7';
 const WORKSPACE_ENTRY = window.location.pathname.replace(/^\/nutkings\//, '').replace(/\/$/, '');
 const SELECTED_WORKSPACE = ['raw-materials/receiving', 'raw-materials/issuing', 'finished-goods/receiving', 'finished-goods/issued', 'admin'].includes(WORKSPACE_ENTRY) ? WORKSPACE_ENTRY : '';
 const WORKSPACE_LOGIN = SELECTED_WORKSPACE ? `/nutkings/${SELECTED_WORKSPACE}/login` : '/nutkings/login';
@@ -69,6 +69,7 @@ const state = {
   scan: { operationType: '', lines: [], preset: {} },
   review: null,
   countRows: [],
+  countWarehouse: '',
   countDraftUid: '',
   currentTrip: null,
   workspaceUsers: null,
@@ -886,7 +887,8 @@ function renderAll() {
   renderWorkspaceUsers();
   if (state.route === 'settings' && !state.workspaceUsers && state.serverOnline) loadWorkspaceUsers(false);
   renderCountDraftOptions();
-  if (state.countRows.length) renderCountRows();
+  if (state.route === 'inventory') renderInventoryCount();
+  else if (state.countRows.length) renderCountRows();
   updateConnectionUI();
 }
 
@@ -1170,6 +1172,7 @@ function renderSyncCentre() {
 }
 
 function renderRoute(route) {
+  if (route === 'inventory') renderInventoryCount();
   if (route === 'raw') renderStock('raw');
   if (route === 'finished') renderStock('finished');
   if (route === 'distribution') renderDistribution();
@@ -1541,12 +1544,8 @@ function renderCountDraftOptions() {
   $('count-draft-select').innerHTML = '<option value="">Start a new count</option>' + state.countDrafts.map((draft) => option(draft.external_uid, `${draft.reference || draft.warehouse_type} · ${formatDateTime(draft.updated_at)}`, draft.external_uid === state.countDraftUid)).join('');
 }
 
-function openCount(type = 'raw') {
-  if (!state.snapshot.permissions?.[type === 'raw' ? 'raw_count' : 'finished_count']) {
-    toast('You do not have access to this warehouse count.', 'error');
-    return;
-  }
-  navigate('inventory');
+function resetCount(type) {
+  state.countWarehouse = type;
   $('count-warehouse').value = type;
   state.countDraftUid = '';
   const rows = clone(state.snapshot.inventory_rows?.[type] || []);
@@ -1558,7 +1557,35 @@ function openCount(type = 'raw') {
   $('count-feedback').hidden = true;
   delete $('count-scan').dataset.productId;
   closeProductAutocomplete('count');
+  $('count-search').value = '';
+  $('count-filter').value = 'all';
+}
+
+function renderInventoryCount() {
+  const allowed = ['raw', 'finished'].filter((type) => state.snapshot.permissions?.[`${type}_count`]);
+  Array.from($('count-warehouse').options).forEach((item) => { item.disabled = !allowed.includes(item.value); });
+  if (!allowed.length) return;
+  const type = allowed.includes(state.countWarehouse) ? state.countWarehouse
+    : allowed.includes($('count-warehouse').value) ? $('count-warehouse').value : allowed[0];
+  if (state.countWarehouse !== type) resetCount(type);
+  // Refresh an untouched count when a snapshot arrives, including first login.
+  // Once counting starts, keep its original quantities for Odoo conflict checks.
+  else if (!state.countDraftUid && !state.countRows.some((row) => row.counted_quantity !== '' && row.counted_quantity != null)) {
+    state.countRows = clone(state.snapshot.inventory_rows?.[type] || []).map((row) => ({ ...row, counted_quantity: '' }));
+  }
+  $('count-warehouse').value = type;
+  renderCountDraftOptions();
   renderCountRows();
+}
+
+function openCount(type = 'raw') {
+  if (!['raw', 'finished'].includes(type) || !state.snapshot.permissions?.[`${type}_count`]) {
+    toast('You do not have access to this warehouse count.', 'error');
+    $('count-warehouse').value = state.countWarehouse || 'raw';
+    return;
+  }
+  resetCount(type);
+  navigate('inventory');
   $('count-scan').focus();
 }
 
@@ -1662,6 +1689,7 @@ async function submitCount() {
     state.countDraftUid = '';
     state.countDrafts = await storeAll('countDrafts');
     state.countRows = [];
+    state.countWarehouse = '';
     renderCountDraftOptions();
     renderCountRows();
     toast('Physical inventory submitted. It will apply through Odoo when synchronized.', 'success');
@@ -1675,12 +1703,18 @@ async function submitCount() {
 async function openCountDraft(uidValue) {
   const draft = state.countDrafts.find((item) => item.external_uid === uidValue);
   if (!draft) return;
-  navigate('inventory');
+  if (!['raw', 'finished'].includes(draft.warehouse_type) || !state.snapshot.permissions?.[`${draft.warehouse_type}_count`]) {
+    toast('You do not have access to this warehouse count.', 'error');
+    renderCountDraftOptions();
+    return;
+  }
+  resetCount(draft.warehouse_type);
   state.countDraftUid = draft.external_uid;
   $('count-warehouse').value = draft.warehouse_type;
   $('count-date').value = draft.count_date;
   $('count-reference').value = draft.reference || '';
   state.countRows = clone(draft.rows || []);
+  navigate('inventory');
   renderCountDraftOptions();
   $('count-draft-select').value = draft.external_uid;
   renderCountRows();
@@ -2247,7 +2281,7 @@ async function init() {
   if ((state.snapshot.workspace || '') !== SELECTED_WORKSPACE) state.snapshot = emptySnapshot();
   if ('serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.6', { scope: '/nutkings/' });
+      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.7', { scope: '/nutkings/' });
       registration.update().catch(() => {});
     } catch (error) {
       console.warn('Nut Kings service worker registration failed', error);

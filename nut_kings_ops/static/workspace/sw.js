@@ -1,10 +1,10 @@
 'use strict';
-const CACHE = 'nut-kings-ops-v1.4.6';
+const CACHE = 'nut-kings-ops-v1.4.7';
 const WORKSPACE_PATHS = ['/nutkings/', '/nutkings/admin', '/nutkings/raw-materials/receiving', '/nutkings/raw-materials/issuing', '/nutkings/finished-goods/receiving', '/nutkings/finished-goods/issued'];
 const SHELL = [
-  '/nut_kings_ops/static/workspace/index.html?v=1.4.6',
-  '/nut_kings_ops/static/workspace/app-v1.4.1.css?v=1.4.6',
-  '/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.6',
+  '/nut_kings_ops/static/workspace/index.html?v=1.4.7',
+  '/nut_kings_ops/static/workspace/app-v1.4.1.css?v=1.4.7',
+  '/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.7',
   '/nut_kings_ops/static/workspace/vendor/zxing-reader-3.1.4.js',
   '/nut_kings_ops/static/workspace/vendor/zxing-reader-3.1.4.wasm',
   '/nut_kings_ops/static/workspace/scanner-core-v1.4.6.js',
@@ -31,7 +31,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(request).then((response) => {
       if (response.ok && !response.redirected) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
       return response;
-    }).catch(async () => (await caches.match(request)) || (await caches.match('/nut_kings_ops/static/workspace/index.html?v=1.4.6')) || new Response('Open this workspace while online before using it offline.', { status: 503, headers: { 'Content-Type': 'text/plain' } })));
+    }).catch(async () => (await caches.match(request)) || (await caches.match('/nut_kings_ops/static/workspace/index.html?v=1.4.7')) || new Response('Open this workspace while online before using it offline.', { status: 503, headers: { 'Content-Type': 'text/plain' } })));
     return;
   }
   if (url.pathname.startsWith('/nut_kings_ops/static/') || url.pathname === '/nutkings/scanner-worker.js') {

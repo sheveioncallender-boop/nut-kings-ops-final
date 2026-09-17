@@ -11,7 +11,7 @@ from ..workspace_policy import scoped_permissions
 
 
 class NutKingsApi(http.Controller):
-    VERSION = '1.4.6'
+    VERSION = '1.4.7'
     MAX_BATCH = 250
     MAX_LINES = 500
     WORKSPACE_ROLES = {
