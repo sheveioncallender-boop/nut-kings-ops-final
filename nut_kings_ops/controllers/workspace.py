@@ -175,6 +175,17 @@ class NutKingsWorkspace(http.Controller):
             ('Cache-Control', 'no-cache, must-revalidate'),
         ])
 
+    @http.route('/nutkings/scanner-worker.js', type='http', auth='public', methods=['GET'], csrf=False)
+    def scanner_worker(self, **kwargs):
+        # Keep the dedicated worker inside the PWA scope. Its decoder and WASM
+        # requests must be controlled by the service worker when offline.
+        content = (self.MODULE_PATH / 'static' / 'workspace' / 'scanner-worker-v1.4.6.js').read_text(encoding='utf-8')
+        return request.make_response(content, headers=[
+            ('Content-Type', 'application/javascript; charset=utf-8'),
+            ('Cache-Control', 'no-cache, must-revalidate'),
+            ('X-Content-Type-Options', 'nosniff'),
+        ])
+
     @http.route('/nutkings/manifest.webmanifest', type='http', auth='public', methods=['GET'], csrf=False)
     def manifest(self, **kwargs):
         content = (self.MODULE_PATH / 'static' / 'workspace' / 'manifest.webmanifest').read_text(encoding='utf-8')

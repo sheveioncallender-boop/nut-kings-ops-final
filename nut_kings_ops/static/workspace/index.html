@@ -10,7 +10,7 @@
   <link rel="manifest" href="/nutkings/manifest.webmanifest">
   <link rel="icon" href="/nut_kings_ops/static/description/icon-192.png">
   <link rel="apple-touch-icon" href="/nut_kings_ops/static/description/icon-192.png">
-  <link rel="stylesheet" href="/nut_kings_ops/static/workspace/app-v1.4.1.css">
+  <link rel="stylesheet" href="/nut_kings_ops/static/workspace/app-v1.4.1.css?v=1.4.6">
   <title>Nut Kings Ops</title>
 </head>
 <body>
@@ -36,7 +36,7 @@
       <strong id="sidebar-user">Nut King User</strong>
       <div id="sidebar-role">Workspace account</div>
       <div id="sidebar-company">Loading company…</div>
-      <div id="sidebar-version">Workspace v1.4.1</div>
+      <div id="sidebar-version">Workspace v1.4.6</div>
       <div class="nk-sidebar-account-actions"><a href="/nutkings/backend" id="developer-link" hidden>Odoo Backend</a><button type="button" id="workspace-logout">Sign out</button></div>
     </div>
   </aside>
@@ -111,10 +111,12 @@
           </div>
           <div class="nk-scan-zone">
             <div class="nk-scan-row" style="grid-template-columns:minmax(240px,2fr) .8fr auto">
-              <div class="nk-field product-field nk-autocomplete-field"><label>Scan Product Barcode</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="count-scan" autocomplete="off" aria-autocomplete="list" aria-controls="count-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type at least 3 characters"><div class="nk-autocomplete-menu" id="count-product-suggestions" role="listbox"></div></div><span class="nk-field-help">Type 3 letters or digits to search products by name, internal reference, or barcode.</span></div>
+              <div class="nk-field product-field nk-autocomplete-field"><label for="count-scan">Scan Product Barcode</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="count-scan" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-autocomplete="list" aria-controls="count-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type at least 3 characters"><div class="nk-autocomplete-menu" id="count-product-suggestions" role="listbox"></div></div><span class="nk-field-help">Type 3 letters or digits to search products by name, internal reference, or barcode.</span></div>
               <div class="nk-field"><label>Scan Quantity</label><input class="nk-input" id="count-scan-qty" type="number" min="0.001" step="0.001" value="1"></div>
               <div class="nk-camera-action-stack"><button class="nk-button camera" id="count-camera" type="button"><span class="nk-camera-icon">▣</span> Scan with Camera</button><button class="nk-button dark" id="count-add-scan">Add Count</button></div>
             </div>
+            <div class="nk-scanner-tools"><button class="nk-button light small" id="count-hardware" type="button" aria-pressed="false">Use Connected Scanner</button><button class="nk-button light small" id="count-test-sound" type="button">Test Sound</button><span>USB / Bluetooth scanner: keyboard mode, Enter or Tab after each barcode.</span></div>
+            <div id="count-feedback" class="nk-scan-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></div>
             <span class="nk-field-help">Repeated scans increase the counted quantity. Products with multiple lot rows should be counted directly on the correct row.</span>
           </div>
           <div class="nk-toolbar" style="margin-top:15px"><input class="nk-input nk-search" id="count-search" placeholder="Filter count lines"><select class="nk-select" id="count-filter" style="max-width:210px"><option value="all">All products</option><option value="counted">Counted</option><option value="uncounted">Not counted</option><option value="variance">With variance</option></select><button class="nk-button light small" id="count-zero-visible">Set visible to zero</button><button class="nk-button light small" id="count-clear">Clear Count</button></div>
@@ -186,12 +188,14 @@
       </div>
       <div class="nk-scan-zone">
         <div class="nk-scan-row">
-          <div class="nk-field product-field nk-autocomplete-field"><label>Barcode, Internal Reference, or Product</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="scan-product" autocomplete="off" aria-autocomplete="list" aria-controls="scan-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type product"><div class="nk-autocomplete-menu" id="scan-product-suggestions" role="listbox"></div></div></div>
+          <div class="nk-field product-field nk-autocomplete-field"><label for="scan-product">Barcode, Internal Reference, or Product</label><div class="nk-autocomplete-wrap"><input class="nk-input" id="scan-product" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-autocomplete="list" aria-controls="scan-product-suggestions" aria-expanded="false" placeholder="Scan barcode or type product"><div class="nk-autocomplete-menu" id="scan-product-suggestions" role="listbox"></div></div></div>
           <div class="nk-field"><label>Quantity</label><input class="nk-input" id="scan-qty" type="number" min="0.001" step="0.001" value="1"></div>
           <div class="nk-field"><label>Batch / Lot</label><input class="nk-input" id="scan-lot" placeholder="Optional"></div>
           <div class="nk-field"><label>Expiration Date</label><input class="nk-input" id="scan-expiration" type="date"></div>
           <div class="nk-camera-action-stack"><button class="nk-button camera" id="scan-camera" type="button"><span class="nk-camera-icon">▣</span> Scan with Camera</button><button class="nk-button dark" id="scan-add">Add</button></div>
         </div>
+        <div class="nk-scanner-tools"><button class="nk-button light small" id="scan-hardware" type="button" aria-pressed="false">Use Connected Scanner</button><button class="nk-button light small" id="scan-test-sound" type="button">Test Sound</button><span>USB / Bluetooth scanner: keyboard mode, Enter or Tab after each barcode.</span></div>
+        <div id="scan-feedback" class="nk-scan-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></div>
       </div>
       <div class="nk-table-wrap" style="margin-top:15px"><table class="nk-table"><thead><tr><th>Product</th><th>Barcode</th><th class="number">Quantity</th><th>Unit</th><th>Batch / Lot</th><th>Expiration</th><th></th></tr></thead><tbody id="scan-lines-body"></tbody></table></div>
       <div class="nk-scan-summary"><span class="nk-total" id="scan-total">0 lines · 0 quantity</span><span class="nk-small nk-muted" id="scan-stock-message"></span></div>
@@ -201,24 +205,31 @@
 </div>
 
 <div class="nk-modal-backdrop nk-camera-backdrop" id="camera-modal">
-  <div class="nk-modal nk-camera-modal">
+  <div class="nk-modal nk-camera-modal" role="dialog" aria-modal="true" aria-labelledby="camera-title">
     <div class="nk-modal-head">
-      <div><h2>Scan Barcode with Camera</h2><div class="nk-small nk-muted">Point the rear camera at one barcode. Successful scans use the same Rapid Scan or Physical Inventory workflow already in Nut Kings Ops.</div></div>
+      <div><h2 id="camera-title">Scan Barcode with Camera</h2><div class="nk-small nk-muted">Keep one barcode inside the guide. A high beep means added; two low beeps mean check the message.</div></div>
       <button class="nk-close" id="camera-close" type="button" aria-label="Close camera">×</button>
     </div>
     <div class="nk-camera-body">
       <div class="nk-camera-stage">
-        <video id="camera-video" playsinline muted></video>
+        <video id="camera-video" autoplay playsinline muted aria-label="Live barcode camera"></video>
         <canvas id="camera-canvas" hidden></canvas>
-        <div class="nk-camera-guide" aria-hidden="true"><span></span></div>
+        <div class="nk-camera-guide" id="camera-guide" aria-hidden="true"><span></span></div>
         <div class="nk-camera-mode" id="camera-mode">Preparing camera…</div>
       </div>
-      <div class="nk-camera-status" id="camera-status"><strong>Ready to scan</strong><span>Keep the barcode inside the guide.</span></div>
+      <div class="nk-camera-status" id="camera-status" role="status" aria-live="polite" aria-atomic="true"><strong>Ready to scan</strong><span>Keep the barcode inside the guide.</span></div>
+      <div class="nk-camera-controls">
+        <div class="nk-field" id="camera-device-field" hidden><label for="camera-device">Camera</label><select class="nk-select" id="camera-device"></select></div>
+        <div class="nk-field" id="camera-zoom-field" hidden><label for="camera-zoom">Zoom</label><input id="camera-zoom" type="range" min="1" max="1" step="0.1" value="1"></div>
+        <button class="nk-button light small" id="camera-torch" type="button" aria-pressed="false" hidden>Light On</button>
+        <button class="nk-button light small" id="camera-repeat" type="button">Scan Same Item Again</button>
+        <button class="nk-button light small" id="camera-test-sound" type="button">Test Sound</button>
+      </div>
       <div class="nk-camera-help">
         <span>✓ Rear camera preferred</span><span>✓ Repeated scans increase quantity</span><span>✓ Images stay on this device</span>
       </div>
     </div>
-    <div class="nk-modal-foot"><button class="nk-button light" id="camera-switch" type="button">Switch Camera</button><button class="nk-button danger" id="camera-stop" type="button">Stop Camera</button></div>
+    <div class="nk-modal-foot"><button class="nk-button light" id="camera-switch" type="button">Switch Camera</button><button class="nk-button light" id="camera-retry" type="button">Try Again</button><button class="nk-button danger" id="camera-stop" type="button">Stop Camera</button></div>
   </div>
 </div>
 
@@ -301,6 +312,9 @@
 </div>
 
 <div class="nk-toast-area" id="toast-area"></div>
-<script src="/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.2" defer></script>
+<script src="/nut_kings_ops/static/workspace/vendor/zxing-reader-3.1.4.js" defer></script>
+<script src="/nut_kings_ops/static/workspace/scanner-core-v1.4.6.js" defer></script>
+<script src="/nut_kings_ops/static/workspace/scanner-ui-v1.4.6.js" defer></script>
+<script src="/nut_kings_ops/static/workspace/app-v1.4.1.js?v=1.4.6" defer></script>
 </body>
 </html>

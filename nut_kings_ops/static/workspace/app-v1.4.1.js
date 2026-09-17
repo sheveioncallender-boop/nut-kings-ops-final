@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.6';
 const WORKSPACE_ENTRY = window.location.pathname.replace(/^\/nutkings\//, '').replace(/\/$/, '');
 const SELECTED_WORKSPACE = ['raw-materials/receiving', 'raw-materials/issuing', 'finished-goods/receiving', 'finished-goods/issued', 'admin'].includes(WORKSPACE_ENTRY) ? WORKSPACE_ENTRY : '';
 const WORKSPACE_LOGIN = SELECTED_WORKSPACE ? `/nutkings/${SELECTED_WORKSPACE}/login` : '/nutkings/login';
@@ -76,31 +76,6 @@ const state = {
   ownerConflict: null,
 };
 
-const cameraScanner = {
-  stream: null,
-  detector: null,
-  context: 'scan',
-  running: false,
-  facingMode: 'environment',
-  animationFrame: 0,
-  lastCode: '',
-  armed: true,
-  emptyFrames: 0,
-  lastScanAt: 0,
-};
-
-// Mobile browsers, especially iPhone Safari, require Web Audio to be
-// created/resumed during an explicit user gesture. Keep one audio context
-// alive for the camera session so successful scans can beep later from the
-// asynchronous camera detection loop.
-const cameraAudio = {
-  context: null,
-  unlocked: false,
-};
-
-const CAMERA_NATIVE_FORMATS = [
-  'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'code_93', 'itf', 'codabar', 'qr_code', 'data_matrix', 'pdf417', 'aztec',
-];
 
 const $ = (id) => document.getElementById(id);
 const all = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -292,7 +267,12 @@ function toast(message, type = '') {
 }
 
 function openModal(id) { $(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeModal(id) { $(id).classList.remove('open'); if (!document.querySelector('.nk-modal-backdrop.open')) document.body.style.overflow = ''; }
+function closeModal(id) {
+  if (id === 'camera-modal') cameraStopTracks();
+  if (id === 'scan-modal' && $('camera-modal').classList.contains('open')) closeCameraScanner();
+  $(id).classList.remove('open');
+  if (!document.querySelector('.nk-modal-backdrop.open')) document.body.style.overflow = '';
+}
 function badge(value, label = '') { return `<span class="nk-badge ${html(value)}">${html(label || value || 'Unknown')}</span>`; }
 function option(value, label, selected = false) { return `<option value="${html(value)}" ${selected ? 'selected' : ''}>${html(label)}</option>`; }
 function productById(id) { return state.snapshot.products.find((item) => item.id === Number(id)); }
@@ -336,410 +316,6 @@ function validateCachedOperationStock(operation, showMessage = true) {
   }
   if (errors.length && showMessage) toast(errors[0], 'error');
   return !errors.length;
-}
-function cameraSetStatus(title, detail = '', type = '') {
-  const element = $('camera-status');
-  if (!element) return;
-  element.className = `nk-camera-status ${type}`.trim();
-  element.innerHTML = `<strong>${html(title)}</strong><span>${html(detail)}</span>`;
-}
-
-function cameraBarcodeVariants(rawValue) {
-  const raw = String(rawValue || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
-  const values = [raw];
-  if (/^0\d{12}$/.test(raw)) values.push(raw.slice(1));
-  if (/^\d{12}$/.test(raw)) values.push(`0${raw}`);
-  return [...new Set(values.filter(Boolean))];
-}
-
-function cameraFindProduct(rawValue, type) {
-  const variants = cameraBarcodeVariants(rawValue).map((value) => value.toLowerCase());
-  return state.snapshot.products.find((product) => {
-    if (type && product.type !== type) return false;
-    return [product.barcode, product.default_code]
-      .filter(Boolean)
-      .some((candidate) => variants.includes(String(candidate).trim().toLowerCase()));
-  }) || null;
-}
-
-function cameraAudioContext() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) return null;
-  if (!cameraAudio.context || cameraAudio.context.state === 'closed') {
-    cameraAudio.context = new AudioContextClass();
-  }
-  return cameraAudio.context;
-}
-
-async function cameraUnlockAudio() {
-  try {
-    const context = cameraAudioContext();
-    if (!context) return false;
-    if (context.state === 'suspended') await context.resume();
-
-    // A practically silent pulse inside the user's tap is important on iOS.
-    // It primes the audio output without making a sound before a barcode scan.
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const now = context.currentTime;
-    gain.gain.setValueAtTime(0.00001, now);
-    oscillator.frequency.setValueAtTime(440, now);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.012);
-    oscillator.addEventListener('ended', () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    }, { once: true });
-    cameraAudio.unlocked = context.state === 'running';
-    return cameraAudio.unlocked;
-  } catch (error) {
-    cameraAudio.unlocked = false;
-    return false;
-  }
-}
-
-function cameraBeep() {
-  try {
-    navigator.vibrate?.(70);
-    const context = cameraAudioContext();
-    if (!context) return;
-
-    // The context should already be unlocked by the Scan with Camera tap.
-    // Resume again defensively for browsers that temporarily suspend audio.
-    if (context.state === 'suspended') context.resume().catch(() => {});
-
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const now = context.currentTime + 0.004;
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(1040, now);
-    oscillator.frequency.exponentialRampToValueAtTime(1320, now + 0.085);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.16, now + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.115);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.12);
-    oscillator.addEventListener('ended', () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    }, { once: true });
-  } catch (error) {
-    // Haptics/audio are optional and never block scanning.
-  }
-}
-
-function cameraAcceptBarcode(rawValue, format = '') {
-  const code = String(rawValue || '').trim();
-  if (!code || !cameraScanner.running) return;
-  const now = Date.now();
-  if (!cameraScanner.armed && code === cameraScanner.lastCode) return;
-  if (now - cameraScanner.lastScanAt < 450 && code === cameraScanner.lastCode) return;
-  cameraScanner.lastCode = code;
-  cameraScanner.armed = false;
-  cameraScanner.emptyFrames = 0;
-  cameraScanner.lastScanAt = now;
-
-  const kind = cameraScanner.context;
-  const type = autocompleteProductType(kind);
-  const product = cameraFindProduct(code, type);
-  if (!product) {
-    cameraSetStatus(`Barcode ${code} not found`, `It is not in the synchronized ${type === 'raw_material' ? 'Raw Materials' : 'Finished Goods'} catalogue.`, 'error');
-    navigator.vibrate?.([60, 40, 60]);
-    return;
-  }
-
-  const input = autocompleteInput(kind);
-  input.value = product.name;
-  input.dataset.productId = String(product.id);
-  closeProductAutocomplete(kind);
-  if (kind === 'count') {
-    const matchingRows = state.countRows.filter((row) => row.product_id === product.id);
-    if (!matchingRows.length) {
-      cameraSetStatus(`${product.name} is not in this count`, 'Synchronize or choose the correct warehouse before counting this product.', 'error');
-      return;
-    }
-    if (matchingRows.length > 1) {
-      $('count-search').value = product.name;
-      renderCountRows();
-      cameraSetStatus(`${product.name} has multiple lot rows`, 'Close the camera and enter the count on the correct lot/stock row.', 'error');
-      navigator.vibrate?.([60, 40, 60]);
-      return;
-    }
-    addCountScan();
-  } else {
-    addScanLine();
-  }
-  cameraBeep();
-  cameraSetStatus(`${product.name} added`, `${code}${format ? ` · ${format.replaceAll('_', ' ').toUpperCase()}` : ''} · Move away, then scan again to increase quantity.`, 'success');
-}
-
-function cameraRuns(bits) {
-  if (!bits?.length) return [];
-  const runs = [];
-  let bit = bits[0];
-  let length = 1;
-  for (let index = 1; index < bits.length; index += 1) {
-    if (bits[index] === bit) length += 1;
-    else { runs.push({ bit, length }); bit = bits[index]; length = 1; }
-  }
-  runs.push({ bit, length });
-  return runs;
-}
-
-function cameraSmoothBits(bits) {
-  if (bits.length < 7) return bits;
-  const output = bits.slice();
-  for (let index = 2; index < bits.length - 2; index += 1) {
-    const sum = bits[index - 2] + bits[index - 1] + bits[index] + bits[index + 1] + bits[index + 2];
-    output[index] = sum >= 3 ? 1 : 0;
-  }
-  return output;
-}
-
-const EAN_L = { '0001101':'0','0011001':'1','0010011':'2','0111101':'3','0100011':'4','0110001':'5','0101111':'6','0111011':'7','0110111':'8','0001011':'9' };
-const EAN_G = { '0100111':'0','0110011':'1','0011011':'2','0100001':'3','0011101':'4','0111001':'5','0000101':'6','0010001':'7','0001001':'8','0010111':'9' };
-const EAN_R = { '1110010':'0','1100110':'1','1101100':'2','1000010':'3','1011100':'4','1001110':'5','1010000':'6','1000100':'7','1001000':'8','1110100':'9' };
-const EAN_PARITY = { 'LLLLLL':'0','LLGLGG':'1','LLGGLG':'2','LLGGGL':'3','LGLLGG':'4','LGGLLG':'5','LGGGLL':'6','LGLGLG':'7','LGLGGL':'8','LGGLGL':'9' };
-
-function cameraEanChecksum(value) {
-  if (!/^\d+$/.test(value) || value.length < 2) return false;
-  const digits = value.split('').map(Number);
-  const check = digits.pop();
-  let sum = 0;
-  const total = digits.length;
-  for (let index = 0; index < total; index += 1) {
-    const fromRight = total - index;
-    sum += digits[index] * (fromRight % 2 === 1 ? 3 : 1);
-  }
-  return ((10 - (sum % 10)) % 10) === check;
-}
-
-function cameraDecodeEanModules(bits) {
-  const text = bits.join('');
-  if (bits.length === 95) {
-    if (!text.startsWith('101') || text.slice(45, 50) !== '01010' || !text.endsWith('101')) return null;
-    let leftDigits = '';
-    let parity = '';
-    for (let index = 0; index < 6; index += 1) {
-      const chunk = text.slice(3 + (index * 7), 10 + (index * 7));
-      if (EAN_L[chunk] !== undefined) { leftDigits += EAN_L[chunk]; parity += 'L'; }
-      else if (EAN_G[chunk] !== undefined) { leftDigits += EAN_G[chunk]; parity += 'G'; }
-      else return null;
-    }
-    const first = EAN_PARITY[parity];
-    if (first === undefined) return null;
-    let rightDigits = '';
-    for (let index = 0; index < 6; index += 1) {
-      const chunk = text.slice(50 + (index * 7), 57 + (index * 7));
-      if (EAN_R[chunk] === undefined) return null;
-      rightDigits += EAN_R[chunk];
-    }
-    const value = first + leftDigits + rightDigits;
-    return cameraEanChecksum(value) ? { rawValue: value, format: value.startsWith('0') ? 'upc_a/ean_13' : 'ean_13' } : null;
-  }
-  if (bits.length === 67) {
-    if (!text.startsWith('101') || text.slice(31, 36) !== '01010' || !text.endsWith('101')) return null;
-    let value = '';
-    for (let index = 0; index < 4; index += 1) {
-      const chunk = text.slice(3 + (index * 7), 10 + (index * 7));
-      if (EAN_L[chunk] === undefined) return null;
-      value += EAN_L[chunk];
-    }
-    for (let index = 0; index < 4; index += 1) {
-      const chunk = text.slice(36 + (index * 7), 43 + (index * 7));
-      if (EAN_R[chunk] === undefined) return null;
-      value += EAN_R[chunk];
-    }
-    return cameraEanChecksum(value) ? { rawValue: value, format: 'ean_8' } : null;
-  }
-  return null;
-}
-
-function cameraDecodeEanRuns(bits) {
-  const runs = cameraRuns(cameraSmoothBits(bits));
-  const candidates = [{ runCount: 59, modules: 95 }, { runCount: 43, modules: 67 }];
-  for (const candidate of candidates) {
-    for (let start = 0; start + candidate.runCount <= runs.length; start += 1) {
-      if (runs[start].bit !== 1) continue;
-      const windowRuns = runs.slice(start, start + candidate.runCount);
-      const width = windowRuns.reduce((sum, run) => sum + run.length, 0);
-      const moduleWidth = width / candidate.modules;
-      if (moduleWidth < 1.15) continue;
-      const modules = [];
-      let error = 0;
-      let moduleTotal = 0;
-      let valid = true;
-      windowRuns.forEach((run) => {
-        const count = Math.round(run.length / moduleWidth);
-        if (count < 1 || count > 4) { valid = false; return; }
-        error += Math.abs((run.length / moduleWidth) - count);
-        moduleTotal += count;
-        for (let index = 0; index < count; index += 1) modules.push(run.bit);
-      });
-      if (!valid || moduleTotal !== candidate.modules || error / candidate.runCount > 0.34) continue;
-      const decoded = cameraDecodeEanModules(modules);
-      if (decoded) return decoded;
-    }
-  }
-  return null;
-}
-
-function cameraOtsuThreshold(values) {
-  const histogram = new Uint32Array(256);
-  let sum = 0;
-  for (const value of values) { histogram[value] += 1; sum += value; }
-  let backgroundWeight = 0;
-  let backgroundSum = 0;
-  let bestVariance = -1;
-  let threshold = 128;
-  for (let level = 0; level < 256; level += 1) {
-    backgroundWeight += histogram[level];
-    if (!backgroundWeight) continue;
-    const foregroundWeight = values.length - backgroundWeight;
-    if (!foregroundWeight) break;
-    backgroundSum += level * histogram[level];
-    const meanBackground = backgroundSum / backgroundWeight;
-    const meanForeground = (sum - backgroundSum) / foregroundWeight;
-    const variance = backgroundWeight * foregroundWeight * ((meanBackground - meanForeground) ** 2);
-    if (variance > bestVariance) { bestVariance = variance; threshold = level; }
-  }
-  return threshold;
-}
-
-function cameraFallbackDetect(video) {
-  if (!video.videoWidth || !video.videoHeight) return null;
-  const canvas = $('camera-canvas');
-  const width = Math.min(760, video.videoWidth);
-  const height = Math.max(1, Math.round(video.videoHeight * (width / video.videoWidth)));
-  if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
-  const context = canvas.getContext('2d', { willReadFrequently: true });
-  context.drawImage(video, 0, 0, width, height);
-  const image = context.getImageData(0, 0, width, height).data;
-  const yRatios = [0.50, 0.44, 0.56, 0.38, 0.62];
-  for (const ratio of yRatios) {
-    const y = Math.max(0, Math.min(height - 1, Math.round(height * ratio)));
-    const gray = new Uint8Array(width);
-    for (let x = 0; x < width; x += 1) {
-      let total = 0;
-      let samples = 0;
-      for (let dy = -1; dy <= 1; dy += 1) {
-        const sy = Math.max(0, Math.min(height - 1, y + dy));
-        const offset = ((sy * width) + x) * 4;
-        total += Math.round((image[offset] * 0.299) + (image[offset + 1] * 0.587) + (image[offset + 2] * 0.114));
-        samples += 1;
-      }
-      gray[x] = Math.round(total / samples);
-    }
-    const threshold = cameraOtsuThreshold(gray);
-    const bits = Array.from(gray, (value) => value <= threshold ? 1 : 0);
-    const decoded = cameraDecodeEanRuns(bits) || cameraDecodeEanRuns(bits.map((bit) => bit ? 0 : 1));
-    if (decoded) return decoded;
-  }
-  return null;
-}
-
-async function cameraBuildNativeDetector() {
-  if (!('BarcodeDetector' in globalThis)) return null;
-  try {
-    const supported = await BarcodeDetector.getSupportedFormats();
-    const formats = CAMERA_NATIVE_FORMATS.filter((format) => supported.includes(format));
-    return formats.length ? new BarcodeDetector({ formats }) : new BarcodeDetector();
-  } catch (error) {
-    try { return new BarcodeDetector(); } catch (fallbackError) { return null; }
-  }
-}
-
-function cameraStopTracks() {
-  if (cameraScanner.animationFrame) cancelAnimationFrame(cameraScanner.animationFrame);
-  cameraScanner.animationFrame = 0;
-  cameraScanner.running = false;
-  cameraScanner.detector = null;
-  cameraScanner.stream?.getTracks?.().forEach((track) => track.stop());
-  cameraScanner.stream = null;
-  const video = $('camera-video');
-  if (video) { video.pause(); video.srcObject = null; }
-}
-
-function closeCameraScanner() {
-  cameraStopTracks();
-  closeModal('camera-modal');
-}
-
-async function cameraDetectionLoop() {
-  if (!cameraScanner.running) return;
-  const video = $('camera-video');
-  let detected = null;
-  try {
-    if (cameraScanner.detector && video.readyState >= 2) {
-      const results = await cameraScanner.detector.detect(video);
-      if (results?.length) detected = { rawValue: results[0].rawValue, format: results[0].format || '' };
-    } else if (video.readyState >= 2) {
-      detected = cameraFallbackDetect(video);
-    }
-  } catch (error) {
-    // A single undecodable frame is expected; keep scanning.
-  }
-  if (detected?.rawValue) {
-    cameraAcceptBarcode(detected.rawValue, detected.format);
-  } else {
-    cameraScanner.emptyFrames += 1;
-    if (cameraScanner.emptyFrames >= 8) { cameraScanner.armed = true; cameraScanner.lastCode = ''; }
-  }
-  if (cameraScanner.running) cameraScanner.animationFrame = requestAnimationFrame(cameraDetectionLoop);
-}
-
-async function openCameraScanner(context = 'scan') {
-  // Run before the first await so mobile Safari receives the audio-unlock
-  // request directly from the user's Scan with Camera tap.
-  cameraUnlockAudio();
-  if (!navigator.mediaDevices?.getUserMedia) {
-    toast('This browser does not provide camera access. Use the barcode field or a hardware scanner.', 'error');
-    return;
-  }
-  cameraStopTracks();
-  cameraScanner.context = context === 'count' ? 'count' : 'scan';
-  cameraScanner.lastCode = '';
-  cameraScanner.armed = true;
-  cameraScanner.emptyFrames = 0;
-  cameraSetStatus('Starting camera…', 'Allow camera access when your phone asks.');
-  $('camera-mode').textContent = 'Preparing camera…';
-  openModal('camera-modal');
-  try {
-    const constraints = {
-      audio: false,
-      video: {
-        facingMode: { ideal: cameraScanner.facingMode },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    };
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    cameraScanner.stream = stream;
-    const video = $('camera-video');
-    video.srcObject = stream;
-    await video.play();
-    cameraScanner.detector = await cameraBuildNativeDetector();
-    cameraScanner.running = true;
-    const track = stream.getVideoTracks()[0];
-    const label = track?.label || (cameraScanner.facingMode === 'environment' ? 'Rear camera' : 'Front camera');
-    $('camera-mode').textContent = cameraScanner.detector ? `${label} · Multi-format scanner` : `${label} · EAN/UPC offline fallback`;
-    cameraSetStatus('Ready to scan', 'Keep one barcode inside the guide. The camera stays open for rapid repeated scanning.');
-    cameraScanner.animationFrame = requestAnimationFrame(cameraDetectionLoop);
-  } catch (error) {
-    cameraStopTracks();
-    const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
-    cameraSetStatus(denied ? 'Camera permission was not granted' : 'Camera could not start', denied ? 'Allow Camera permission for this site in your browser settings, then try again.' : (error?.message || 'Use the normal barcode field instead.'), 'error');
-    $('camera-mode').textContent = 'Camera unavailable';
-  }
-}
-
-async function switchCameraScanner() {
-  cameraScanner.facingMode = cameraScanner.facingMode === 'environment' ? 'user' : 'environment';
-  await openCameraScanner(cameraScanner.context);
 }
 
 function operationApplicableReason(reason, operationType) {
@@ -825,10 +401,12 @@ function renderProductAutocomplete(kind) {
   const input = autocompleteInput(kind);
   const menu = autocompleteMenu(kind);
   if (!input || !menu) return;
+  if (connectedScanner.enabled) { closeProductAutocomplete(kind); return; }
   const query = input.value.trim();
   const results = searchProducts(query, autocompleteProductType(kind));
   productAutocomplete[kind].results = results;
   productAutocomplete[kind].activeIndex = results.length ? 0 : -1;
+  productAutocomplete[kind].userNavigated = false;
   if (query.length < PRODUCT_SEARCH_MIN_CHARS) {
     closeProductAutocomplete(kind);
     return;
@@ -894,11 +472,13 @@ function handleProductAutocompleteKeydown(kind, event, addLineCallback) {
   const menuOpen = autocompleteMenu(kind).classList.contains('open');
   if (event.key === 'ArrowDown' && menuOpen && data.results.length) {
     event.preventDefault();
+    data.userNavigated = true;
     setAutocompleteActive(kind, data.activeIndex + 1);
     return;
   }
   if (event.key === 'ArrowUp' && menuOpen && data.results.length) {
     event.preventDefault();
+    data.userNavigated = true;
     setAutocompleteActive(kind, data.activeIndex - 1);
     return;
   }
@@ -908,13 +488,15 @@ function handleProductAutocompleteKeydown(kind, event, addLineCallback) {
   }
   if (event.key !== 'Enter') return;
   event.preventDefault();
+  if (event.repeat || event.isComposing || !autocompleteInput(kind).value.trim()) return;
+  cameraUnlockAudio();
   const exact = findProduct(autocompleteInput(kind).value, autocompleteProductType(kind));
   if (exact) {
     selectAutocompleteProduct(kind, exact, false);
     addLineCallback();
     return;
   }
-  if (menuOpen && data.results.length) {
+  if (menuOpen && data.results.length && data.userNavigated) {
     selectAutocompleteProduct(kind, data.results[Math.max(0, data.activeIndex)]);
     return;
   }
@@ -1242,6 +824,7 @@ function updateConnectionUI() {
 }
 
 function navigate(route, updateHash = true) {
+  if ($('camera-modal').classList.contains('open')) closeCameraScanner();
   if (!ROUTE_INFO[route]) route = 'dashboard';
   state.route = route;
   localStorage.setItem(LAST_ROUTE_KEY, route);
@@ -1626,6 +1209,7 @@ function populateScanFields(operationType, preset = {}) {
 }
 
 function openScan(operationType = '', preset = {}) {
+  cameraUnlockAudio();
   cameraStopTracks();
   const allowed = allowedOperationTypes();
   const selected = allowed.includes(operationType) ? operationType : allowed[0];
@@ -1643,10 +1227,11 @@ function openScan(operationType = '', preset = {}) {
   $('scan-qty').value = '1';
   $('scan-lot').value = '';
   $('scan-expiration').value = '';
+  $('scan-feedback').hidden = true;
   populateScanFields(selected, preset);
   renderScanLines();
   openModal('scan-modal');
-  window.setTimeout(() => $('scan-product').focus(), 150);
+  window.setTimeout(() => { if (activeScanKind() === 'scan') $('scan-product').focus(); }, 150);
 }
 
 function syncTripTruck() {
@@ -1663,20 +1248,21 @@ function scanProductCandidate() {
   return autocompleteSelectedProduct('scan');
 }
 
-function addScanLine() {
-  const product = scanProductCandidate();
+function addScanLine(options = {}) {
+  cameraUnlockAudio();
+  const product = options.product || scanProductCandidate();
   if (!product) {
-    toast(`Choose a valid ${operationProductType(state.scan.operationType) === 'raw_material' ? 'raw material' : 'finished product'}.`, 'error');
-    $('scan-product').focus();
-    return;
+    return scanFeedback('scan', false, `Choose a valid ${operationProductType(state.scan.operationType) === 'raw_material' ? 'raw material' : 'finished product'}. No item was added.`, options);
   }
   const quantity = number($('scan-qty').value);
-  if (quantity <= 0) {
-    toast('Quantity must be greater than zero.', 'error');
-    return;
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    return scanFeedback('scan', false, 'Quantity must be a number greater than zero. No item was added.', options);
   }
   const lot = $('scan-lot').value.trim();
   const existing = state.scan.lines.find((line) => line.product_id === product.id && String(line.lot_reference || '') === lot);
+  if (existing?.expiration_date && $('scan-expiration').value && existing.expiration_date !== $('scan-expiration').value) {
+    return scanFeedback('scan', false, 'This lot already has a different expiration date. Check the date before adding.', options);
+  }
   if (existing) existing.quantity += quantity;
   else state.scan.lines.push({ product_id: product.id, quantity, lot_reference: lot, expiration_date: $('scan-expiration').value || '', notes: '' });
   $('scan-product').value = '';
@@ -1686,7 +1272,7 @@ function addScanLine() {
   $('scan-lot').value = '';
   $('scan-expiration').value = '';
   renderScanLines();
-  $('scan-product').focus();
+  return scanFeedback('scan', true, `${product.name}: ${formatNumber(quantity)} ${product.uom || 'units'} added to this operation.`, options);
 }
 
 function renderScanLines() {
@@ -1969,6 +1555,7 @@ function openCount(type = 'raw') {
   $('count-date').value = today();
   $('count-draft-select').value = '';
   $('count-scan').value = '';
+  $('count-feedback').hidden = true;
   delete $('count-scan').dataset.productId;
   closeProductAutocomplete('count');
   renderCountRows();
@@ -2004,25 +1591,25 @@ function renderCountRows() {
   $('count-variance-summary').textContent = `${varianceRows.length} variance line${varianceRows.length === 1 ? '' : 's'} · Net difference ${formatNumber(varianceTotal)}`;
 }
 
-function addCountScan() {
-  const type = $('count-warehouse').value;
-  const product = autocompleteSelectedProduct('count');
+function addCountScan(options = {}) {
+  cameraUnlockAudio();
+  const product = options.product || autocompleteSelectedProduct('count');
   if (!product) {
-    toast('Scan a valid product for this warehouse.', 'error');
-    return;
+    return scanFeedback('count', false, 'Scan a valid product for this warehouse. The count was not changed.', options);
   }
   const matching = state.countRows.filter((row) => row.product_id === product.id);
   if (!matching.length) {
-    toast('This product is not available in the current count snapshot.', 'error');
-    return;
+    return scanFeedback('count', false, 'This product is not available in the current count snapshot.', options);
   }
   if (matching.length > 1) {
-    toast(`${product.name} has multiple lot or stock rows. Enter the count on the correct row.`, 'error');
     $('count-search').value = product.name;
     renderCountRows();
-    return;
+    return scanFeedback('count', false, `${product.name} has multiple lot or stock rows. Enter the count on the correct row.`, options);
   }
   const quantity = number($('count-scan-qty').value);
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    return scanFeedback('count', false, 'Scan quantity must be a number greater than zero. The count was not changed.', options);
+  }
   const row = matching[0];
   row.counted_quantity = (row.counted_quantity === '' ? 0 : number(row.counted_quantity)) + quantity;
   $('count-scan').value = '';
@@ -2030,7 +1617,7 @@ function addCountScan() {
   closeProductAutocomplete('count');
   $('count-scan-qty').value = '1';
   renderCountRows();
-  $('count-scan').focus();
+  return scanFeedback('count', true, `${product.name}: ${formatNumber(quantity)} added. Counted total: ${formatNumber(row.counted_quantity)}.`, options);
 }
 
 function countDraftPayload() {
@@ -2322,6 +1909,7 @@ async function signOutWorkspace() {
 }
 
 function bindEvents() {
+  bindScannerControls();
   all('.nk-nav-button').forEach((button) => button.addEventListener('click', () => navigate(button.dataset.route)));
   $('workspace-logout').addEventListener('click', signOutWorkspace);
   $('workspace-user-search').addEventListener('input', renderWorkspaceUsers);
@@ -2414,7 +2002,7 @@ function bindEvents() {
   window.addEventListener('online', async () => { await checkServer(); if (state.serverOnline) syncQueue(false); });
   window.addEventListener('offline', () => { state.serverOnline = false; updateConnectionUI(); });
   window.addEventListener('pagehide', cameraStopTracks);
-  document.addEventListener('visibilitychange', () => { if (document.hidden && cameraScanner.running) closeCameraScanner(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && $('camera-modal').classList.contains('open')) closeCameraScanner(); });
   window.addEventListener('hashchange', () => navigate(routeFromHash(), false));
   bindCleanFeatureEvents();
 }
@@ -2659,7 +2247,7 @@ async function init() {
   if ((state.snapshot.workspace || '') !== SELECTED_WORKSPACE) state.snapshot = emptySnapshot();
   if ('serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.2', { scope: '/nutkings/' });
+      const registration = await navigator.serviceWorker.register('/nutkings/sw.js?v=1.4.6', { scope: '/nutkings/' });
       registration.update().catch(() => {});
     } catch (error) {
       console.warn('Nut Kings service worker registration failed', error);
