@@ -1,4 +1,85 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
+
+
+class StockWarehouse(models.Model):
+    _inherit = 'stock.warehouse'
+
+    nk_inventory_type = fields.Selection([
+        ('raw_material', 'Raw Materials'),
+        ('finished_good', 'Finished Goods'),
+    ], string='Nut Kings Warehouse', copy=False, index=True)
+
+    _nk_inventory_type_company_unique = models.Constraint(
+        'unique(company_id, nk_inventory_type)',
+        'Only one Nut Kings warehouse of each type is allowed per company.',
+    )
+
+    @api.model
+    def _nk_find_warehouse(self, company, inventory_type, stock=False):
+        warehouses = self.sudo().with_company(company).with_context(active_test=False)
+        warehouse = warehouses.search([
+            ('company_id', '=', company.id),
+            ('nk_inventory_type', '=', inventory_type),
+        ], limit=1)
+        if not warehouse and stock:
+            # Recover after reinstall using the existing stock location, never
+            # by a display name that could belong to an unrelated warehouse.
+            warehouse = warehouses.search([
+                ('company_id', '=', company.id), ('lot_stock_id', '=', stock.id),
+            ], limit=1)
+        return warehouse
+
+    @api.model
+    def _nk_ensure_warehouse(self, company, inventory_type, stock):
+        """Adopt the original stock location without moving or recreating stock.
+
+        Odoo 19 always creates new locations in stock.warehouse.create(), even
+        when location IDs are supplied. Create the native warehouse first, then
+        replace only its newly generated empty stock location and references.
+        Production/loss locations stay outside the warehouse so issuing and
+        finished-goods receiving remain real outgoing/incoming movements.
+        """
+        warehouses = self.sudo().with_company(company).with_context(active_test=False)
+        warehouse = warehouses._nk_find_warehouse(company, inventory_type, stock)
+        if warehouse:
+            if warehouse.lot_stock_id != stock or warehouse.nk_inventory_type not in (False, inventory_type):
+                raise ValidationError(_('The Nut Kings warehouse is linked to a different stock location. Review its configuration before continuing.'))
+            if not warehouse.active:
+                raise ValidationError(_('The Nut Kings warehouse is archived. Unarchive it before continuing.'))
+            if not warehouse.nk_inventory_type:
+                warehouse.nk_inventory_type = inventory_type
+            if stock.location_id != warehouse.view_location_id:
+                stock.location_id = warehouse.view_location_id
+            return warehouse
+
+        code, name = ('NKRM', 'Raw Materials Warehouse') if inventory_type == 'raw_material' else ('NKFG', 'Finished Goods Warehouse')
+        if warehouses.search_count([
+            ('company_id', '=', company.id), '|', ('code', '=', code), ('name', '=', name),
+        ]):
+            raise ValidationError(_('%s already exists but is not linked to the Nut Kings stock location. Review it before continuing.') % name)
+        warehouse = warehouses.create({
+            'name': name, 'code': code, 'company_id': company.id,
+            'nk_inventory_type': inventory_type,
+            'reception_steps': 'one_step', 'delivery_steps': 'ship_only',
+        })
+        generated_stock = warehouse.lot_stock_id
+        stock.write({'location_id': warehouse.view_location_id.id, 'replenish_location': True})
+        warehouse.write({'lot_stock_id': stock.id})
+
+        # Keep native receipt/delivery routes consistent with the canonical
+        # location. This warehouse has just been created in this transaction.
+        for model, field_names in (
+            ('stock.picking.type', ('default_location_src_id', 'default_location_dest_id')),
+            ('stock.rule', ('location_src_id', 'location_dest_id')),
+        ):
+            records = self.env[model].sudo().with_context(active_test=False).search([
+                ('warehouse_id', '=', warehouse.id),
+            ])
+            for field_name in field_names:
+                records.filtered(lambda record: record[field_name] == generated_stock).write({field_name: stock.id})
+        generated_stock.active = False
+        return warehouse
 
 
 class StockLocation(models.Model):
@@ -139,17 +220,23 @@ class StockPickingType(models.Model):
         customers = self.env.ref('stock.stock_location_customers')
         result = {}
         for company in companies:
+            Warehouse = self.env['stock.warehouse'].sudo().with_company(company)
+            raw_warehouse = Warehouse._nk_find_warehouse(company, 'raw_material')
+            finished_warehouse = Warehouse._nk_find_warehouse(company, 'finished_good')
             root = self._nk_location(company, 'ROOT', 'Nut Kings Operations', 'view')
             rm_root = self._nk_location(company, 'RM_ROOT', 'Raw Materials Warehouse', 'view', root)
-            rm_stock = self._nk_location(company, 'RM_STOCK', 'Available Raw Materials', 'internal', rm_root, 'NK-RM-STOCK')
+            rm_stock = self._nk_location(company, 'RM_STOCK', 'Available Raw Materials', 'internal', raw_warehouse.view_location_id or rm_root, 'NK-RM-STOCK')
             rm_use = self._nk_location(company, 'RM_USE', 'Issued / Operational Use', 'production', rm_root, 'NK-RM-USE')
             fg_root = self._nk_location(company, 'FG_ROOT', 'Finished Goods Warehouse', 'view', root)
             fg_entry = self._nk_location(company, 'FG_ENTRY', 'Finished Goods Entry', 'inventory', fg_root, 'NK-FG-ENTRY')
-            fg_stock = self._nk_location(company, 'FG_STOCK', 'Available Finished Goods', 'internal', fg_root, 'NK-FG-STOCK')
+            fg_stock = self._nk_location(company, 'FG_STOCK', 'Available Finished Goods', 'internal', finished_warehouse.view_location_id or fg_root, 'NK-FG-STOCK')
             fg_trucks = self._nk_location(company, 'FG_TRUCKS', 'Vans', 'view', fg_root)
             fg_staging = self._nk_location(company, 'FG_STAGING', 'Van Loading Staging', 'internal', fg_root, 'NK-FG-STAGING')
             fg_damage = self._nk_location(company, 'FG_DAMAGE', 'Damaged / Write-Off', 'inventory', fg_root, 'NK-FG-DAMAGE')
             fg_quarantine = self._nk_location(company, 'FG_QUARANTINE', 'Quarantine / Inspection', 'internal', fg_root, 'NK-FG-QUARANTINE')
+
+            raw_warehouse = Warehouse._nk_ensure_warehouse(company, 'raw_material', rm_stock)
+            finished_warehouse = Warehouse._nk_ensure_warehouse(company, 'finished_good', fg_stock)
 
             common = {
                 'show_operations': True,
@@ -158,6 +245,7 @@ class StockPickingType(models.Model):
             }
             raw_receipt = self._nk_picking_type(company, 'RM_RECEIPT', {
                 **common,
+                'warehouse_id': raw_warehouse.id,
                 'name': 'Nut Kings: Receive Raw Materials',
                 'sequence_code': 'NK-RMR',
                 'code': 'incoming',
@@ -167,6 +255,7 @@ class StockPickingType(models.Model):
             })
             raw_issue = self._nk_picking_type(company, 'RM_ISSUE', {
                 **common,
+                'warehouse_id': raw_warehouse.id,
                 'name': 'Nut Kings: Issue Raw Materials',
                 'sequence_code': 'NK-RMI',
                 'code': 'internal',
@@ -176,6 +265,7 @@ class StockPickingType(models.Model):
             })
             finished_receipt = self._nk_picking_type(company, 'FG_RECEIPT', {
                 **common,
+                'warehouse_id': finished_warehouse.id,
                 'name': 'Nut Kings: Receive Finished Goods',
                 'sequence_code': 'NK-FGR',
                 'code': 'incoming',
@@ -185,6 +275,7 @@ class StockPickingType(models.Model):
             })
             finished_truck = self._nk_picking_type(company, 'FG_TRUCK', {
                 **common,
+                'warehouse_id': finished_warehouse.id,
                 'name': 'Nut Kings: Finished Goods to Van',
                 'sequence_code': 'NK-TRK',
                 'code': 'internal',
@@ -211,6 +302,7 @@ class StockPickingType(models.Model):
                 'reservation_method': 'manual',
             })
             result[company.id] = {
+                'warehouses': {'raw': raw_warehouse, 'finished': finished_warehouse},
                 'locations': {
                     'root': root, 'rm_root': rm_root, 'rm_stock': rm_stock, 'rm_use': rm_use,
                     'fg_root': fg_root, 'fg_entry': fg_entry, 'fg_stock': fg_stock,
