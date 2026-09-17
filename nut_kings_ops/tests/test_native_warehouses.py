@@ -2,6 +2,8 @@
 
 Run with Odoo 19/PostgreSQL using --test-tags /nut_kings_ops:TestNativeWarehouses.
 """
+from unittest.mock import patch
+
 from odoo import Command
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
@@ -56,6 +58,64 @@ class TestNativeWarehouses(TransactionCase):
         setup = self.PickingType.nk_ensure_company_setup(self.company)[self.company.id]
         self.env.invalidate_all()
         return setup
+
+    def _disable_storage_locations(self):
+        users = self.env.ref('base.group_user')
+        users._remove_group(self.env.ref('stock.group_stock_multi_warehouses'))
+        users._remove_group(self.env.ref('stock.group_stock_multi_locations'))
+        self.assertNotIn(self.env.ref('stock.group_stock_multi_locations'), users.all_implied_ids)
+        self.Warehouse.search([]).int_type_id.active = False
+        for xmlid in (
+            'stock.stock_location_view_tree2_editable',
+            'stock.stock_location_view_form_editable',
+        ):
+            view = self.env.ref(xmlid, raise_if_not_found=False)
+            if view:
+                view.active = True
+
+    def test_upgrade_does_not_create_settings_with_missing_picking_policy(self):
+        self._disable_storage_locations()
+        settings = self.env['res.config.settings']
+        defaults = self.env['ir.default'].sudo()
+        has_sales_policy = 'default_picking_policy' in settings._fields
+        if has_sales_policy:
+            # Reproduce the reported Sales + Inventory configuration failure.
+            # The same test also runs when only our stock dependency is present.
+            defaults.set('sale.order', 'picking_policy', False)
+            self.assertFalse(settings.default_get(['default_picking_policy'])['default_picking_policy'])
+
+        with patch.object(type(settings), 'create', side_effect=AssertionError(
+            'Warehouse setup must not create the full configuration wizard',
+        )):
+            setup = self._repair()
+            repeated = self._repair()
+
+        users = self.env.ref('base.group_user')
+        self.assertIn(self.env.ref('stock.group_stock_multi_locations'), users.implied_ids)
+        self.assertIn(self.env.ref('stock.group_stock_multi_warehouses'), users.implied_ids)
+        self.assertEqual(len(setup['warehouses']), 2)
+        for kind, warehouse in setup['warehouses'].items():
+            self.assertEqual(repeated['warehouses'][kind], warehouse)
+            self.assertTrue(warehouse.int_type_id.active)
+        self.assertTrue(all(self.Warehouse.search([]).int_type_id.mapped('active')))
+        for xmlid in (
+            'stock.stock_location_view_tree2_editable',
+            'stock.stock_location_view_form_editable',
+        ):
+            view = self.env.ref(xmlid, raise_if_not_found=False)
+            if view:
+                self.assertFalse(view.active)
+        if has_sales_policy:
+            self.assertIs(defaults._get('sale.order', 'picking_policy'), False)
+
+    def test_upgrade_preserves_existing_sales_picking_policy(self):
+        if 'default_picking_policy' not in self.env['res.config.settings']._fields:
+            self.skipTest('sale_stock is not installed')
+        self._disable_storage_locations()
+        defaults = self.env['ir.default'].sudo()
+        defaults.set('sale.order', 'picking_policy', 'one')
+        self._repair()
+        self.assertEqual(defaults._get('sale.order', 'picking_policy'), 'one')
 
     def test_existing_done_receipt_becomes_visible_without_replay(self):
         receipt = self._transfer(self.raw_product, self.raw_receipt_type, self.supplier, self.raw_stock, 1, 'raw_receipt')

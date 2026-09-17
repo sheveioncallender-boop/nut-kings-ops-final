@@ -1,4 +1,4 @@
-from odoo import api, fields, models, _
+from odoo import Command, api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
@@ -31,6 +31,38 @@ class StockWarehouse(models.Model):
         return warehouse
 
     @api.model
+    def _nk_enable_storage_locations(self):
+        """Enable the inventory prerequisite without executing all Settings.
+
+        Native warehouse creation otherwise creates res.config.settings when
+        adding a second warehouse. Required settings from unrelated installed
+        apps can block that wizard, and execute() can change module state during
+        our upgrade. Apply only stock's Storage Locations transition here; Odoo
+        still creates the warehouses and manages the multi-warehouse group.
+        """
+        warehouses = self.sudo()
+        users = warehouses.env.ref('base.group_user')
+        locations = warehouses.env.ref('stock.group_stock_multi_locations')
+        if locations in users.implied_ids:
+            return
+        already_enabled = locations in users.all_implied_ids
+        # Odoo's _check_multiwarehouse_group checks this direct implication.
+        users.write({'implied_ids': [Command.link(locations.id)]})
+        if already_enabled:
+            return
+
+        # Match stock.res.config.settings.set_values() when locations are
+        # enabled, without saving sales defaults or other application settings.
+        warehouses.with_context(active_test=True).search([]).int_type_id.write({'active': True})
+        for xmlid in (
+            'stock.stock_location_view_tree2_editable',
+            'stock.stock_location_view_form_editable',
+        ):
+            view = warehouses.env.ref(xmlid, raise_if_not_found=False)
+            if view:
+                view.active = False
+
+    @api.model
     def _nk_ensure_warehouse(self, company, inventory_type, stock):
         """Adopt the original stock location without moving or recreating stock.
 
@@ -58,6 +90,7 @@ class StockWarehouse(models.Model):
             ('company_id', '=', company.id), '|', ('code', '=', code), ('name', '=', name),
         ]):
             raise ValidationError(_('%s already exists but is not linked to the Nut Kings stock location. Review it before continuing.') % name)
+        warehouses._nk_enable_storage_locations()
         warehouse = warehouses.create({
             'name': name, 'code': code, 'company_id': company.id,
             'nk_inventory_type': inventory_type,
